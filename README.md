@@ -10,16 +10,16 @@ See examples to `/example` folder.
 
 ```dart
 // Global settings:
-Dev.enable = true;					// whether log msg
-Dev.isLogFileInfo = true;			// whether log the location file info
-Dev.defaultColorInt = 33;			// default color text, int value from 0 to 107
+Dev.enable = true; // whether log msg
+Dev.isLogFileInfo = true; // whether log the location file info
+Dev.defaultColorInt = 33; // default color text, int value from 0 to 107
 
 // Log usage:
-Dev.log('Colorized text log');				// default yellow text
-Dev.logInfo('Colorized text Info'); 		// blue text
-Dev.logSuccess('Colorized text Success');   // green text
-Dev.logWarning('Colorized text Warning');   // yellow text
-Dev.logError('Colorized text Error'); 		// red text
+Dev.log('Colorized text log'); // default yellow text
+Dev.logInfo('Colorized text Info'); // blue text
+Dev.logSuccess('Colorized text Success'); // green text
+Dev.logWarning('Colorized text Warning'); // yellow text
+Dev.logError('Colorized text Error'); // red text
 Dev.logBlink('Colorized text blink', isSlow: true, isLog: true); // blink orange text
 Dev.logCustom('Colorized text custom with Custom: 41', colorInt: 41, fileInfo: null); // custom color text
 ```
