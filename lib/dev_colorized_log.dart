@@ -14,15 +14,17 @@ class Dev {
   static int defaultColorInt = 33;
 
   /// Default color log, @param[colorInt]: 0 to 107
-  static void log(String msg, {int? colorInt}) {
+  static void log(String msg, {bool? isLog, int? colorInt}) {
     int ci = colorInt ?? defaultColorInt;
-    if (enable) {
-      final String fileInfo = Dev.isLogFileInfo ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
-      logCustom(msg, colorInt: ci, fileInfo: fileInfo);
-    }
+    final String fileInfo = Dev.isLogFileInfo ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    logCustom(msg, colorInt: ci, isLog: isLog, fileInfo: fileInfo);
   }
+  
   /// Custom color text, @param[colorInt]: 0 to 107
   static void logCustom(String msg, {int colorInt = 33, bool? isLog, String? fileInfo}) {
+    if (!enable) {
+      return;
+    }
     if (isLog != null && !isLog) {
       return;
     }
