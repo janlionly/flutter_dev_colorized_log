@@ -3,7 +3,7 @@
  * Date:   2023-09-21
  */
 import 'dart:async';
-import 'customized_logger.dart';
+import 'src/customized_logger.dart';
 
 /// @param static [enable]: whether log msg.
 /// @param static [isLogFileInfo]: whether log the location file info.

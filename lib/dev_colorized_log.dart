@@ -4,4 +4,4 @@
  */
 library dev_colorized_log;
 
-export 'src/dev_logger.dart';
+export 'dev_logger.dart';
