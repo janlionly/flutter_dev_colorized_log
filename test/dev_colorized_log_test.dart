@@ -10,7 +10,5 @@ void main() {
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
     Dev.logBlink('Colorized text blink', isSlow: true, isLog: true);
-    
-    Dev.logCustom('Colorized text custom with Custom: 41', colorInt: 41, fileInfo: null);
   });
 }
