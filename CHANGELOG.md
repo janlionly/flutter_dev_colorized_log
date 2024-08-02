@@ -5,3 +5,7 @@
 ## [1.0.1] - 3 Nov 2023
 
 * Fixed: the global log enable.
+
+## [1.0.2] - 2 Aug 2024
+
+* Feat: add log name symbols and more parameters.

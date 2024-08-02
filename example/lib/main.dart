@@ -65,15 +65,33 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter = (_counter + 1) % 99;
-      Dev.logCustom('Colorized text custom with colorInt: $_counter', colorInt: _counter);
+      _counter = (_counter + 1) % 108;
     });
+    Dev.log('\n==========================Click to Log========================');
+    Dev.log('Colorized text custom with colorInt: $_counter', colorInt: _counter);
   }
 
   void printCustomText() {
     for (int i = 0; i < 108; i++) {
-      Dev.logCustom('Colorized text custom with colorInt: $i', colorInt: i, fileInfo: 'printCustomText(): ');
+      Dev.log('Colorized text custom with colorInt: $i', colorInt: i);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Dev.enable = true;
+    // Dev.isLogFileInfo = false;
+    Dev.log('\n==========================All Color Log========================');
+    printCustomText();
+
+    Dev.log('\n==========================Level Log========================');
+    Dev.log('Colorized text log');
+    Dev.logInfo('Colorized text Info');
+    Dev.logSuccess('Colorized text Success');
+    Dev.logWarning('Colorized text Warning');
+    Dev.logError('Colorized text Error');
+    Dev.logBlink('Colorized text blink', isSlow: true, isLog: true);
   }
 
   @override
@@ -84,16 +102,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    Dev.log('Colorized text log');
-    Dev.logInfo('Colorized text Info');
-    Dev.logSuccess('Colorized text Success');
-    Dev.logWarning('Colorized text Warning');
-    Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink', isSlow: true, isLog: true);
-    
-    Dev.logCustom('Colorized text custom with Custom: 41', colorInt: 41, fileInfo: null);
-    
-    printCustomText();
 
     return Scaffold(
       appBar: AppBar(
