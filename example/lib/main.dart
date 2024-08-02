@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter = (_counter + 1) % 108;
     });
-    Dev.log('\n==========================Click to Log========================');
+    Dev.log('==========================Click to Log========================');
     Dev.log('Colorized text custom with colorInt: $_counter', colorInt: _counter);
   }
 
@@ -82,16 +82,18 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     Dev.enable = true;
     // Dev.isLogFileInfo = false;
-    Dev.log('\n==========================All Color Log========================');
+    Dev.defaultColorInt = 0;
+    Dev.log('==========================All Color Log========================');
     printCustomText();
 
-    Dev.log('\n==========================Level Log========================');
-    Dev.log('Colorized text log');
+    Dev.log('==========================Level Log========================', name: 'logLev');
+    Dev.log('Colorized text log', fileLocation: 'main.dart:90xx');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink', isSlow: true, isLog: true);
+    Dev.logBlink('Colorized text blink', isSlow: true);
+    Dev.log('========================Level Log End ======================', isLog: false);
   }
 
   @override
