@@ -9,3 +9,7 @@
 ## [1.0.2] - 2 Aug 2024
 
 * Feat: add log name symbols and more parameters.
+
+## [1.1.0] - 2 Aug 2024
+
+* Fixed: the log of the file location is wrong.
