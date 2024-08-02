@@ -13,3 +13,7 @@
 ## [1.1.0] - 2 Aug 2024
 
 * Fixed: the log of the file location is wrong.
+
+## [1.1.1] - 3 Aug 2024
+
+* Feat: Adjust code level.
