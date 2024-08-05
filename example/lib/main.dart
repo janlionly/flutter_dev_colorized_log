@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     Dev.enable = true;
+    Dev.isDebugPrint = true;
     // Dev.isLogFileLocation = false;
     Dev.defaultColorInt = 0;
     Dev.log('==========================All Color Log========================');
@@ -97,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     String text = 'Hello World!';
     Dev.print('Dev text print: $text', isDebug: false, isLog: true);
+    Dev.print('Dev text print2: $text', isLog: true);
   }
 
   @override

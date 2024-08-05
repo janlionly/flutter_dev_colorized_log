@@ -11,8 +11,9 @@ import 'src/customized_logger.dart';
 class Dev {
   static bool enable = true;
   static bool isLogFileLocation = true;
+  static bool? isDebugPrint;
   static int defaultColorInt = 0;
-
+  
   /// Default color log
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
@@ -47,8 +48,8 @@ class Dev {
     );
   }
   /// log supportting on multiple consoles
-  /// @param[isDebug]: defaulut is false, log on release mode if set to true.
-  static void print(String msg, {bool? isLog, String? fileLocation, bool isDebug = true}) {
+  /// @param[isDebug]: default printing only on debug mode.
+  static void print(String msg, {bool? isLog, String? fileLocation, bool? isDebug}) {
     final String fileInfo = Dev.isLogFileLocation ? 
     (fileLocation != null ? '($fileLocation): ' : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
      : '';
@@ -56,7 +57,7 @@ class Dev {
       enable: Dev.enable,
       isLog: isLog, 
       isMultConsole: true,
-      isDebugPrint: isDebug,
+      isDebugPrint: isDebug ?? Dev.isDebugPrint,
       fileInfo: fileInfo,
     );
   }
