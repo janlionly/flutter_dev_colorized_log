@@ -17,3 +17,7 @@
 ## [1.1.1] - 3 Aug 2024
 
 * Feat: Adjust code level.
+
+## [1.1.2] - 5 Aug 2024
+
+* Feat: Add print to support log showing on multiple consoles.
