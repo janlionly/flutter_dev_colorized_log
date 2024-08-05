@@ -13,7 +13,7 @@ class DevColorizedLog {
     int colorInt = 0, 
     bool? isLog,
     bool? isMultConsole,
-    bool isDebugPrint = true,
+    bool? isDebugPrint,
     String? fileInfo,
     DateTime? time,
     int? sequenceNumber,
@@ -46,7 +46,7 @@ class DevColorizedLog {
     int colorInt = 0, 
     bool? isLog,
     bool? isMultConsole,
-    bool isDebugPrint = true,
+    bool? isDebugPrint,
     String? fileInfo,
     DateTime? time,
     int? sequenceNumber,
@@ -58,7 +58,7 @@ class DevColorizedLog {
     }) {
     void logging() {
       if (isMultConsole != null && isMultConsole == true) {
-        if (isDebugPrint) {
+        if (isDebugPrint == null || isDebugPrint) {
           debugPrint('${fileInfo??''}$msg');
         } else {
           // ignore: avoid_print

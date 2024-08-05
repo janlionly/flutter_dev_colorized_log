@@ -25,3 +25,7 @@
 ## [1.1.3] - 5 Aug 2024
 
 * Feat: Param [isLog] set to true to log anyway.
+
+## [1.1.4] - 5 Aug 2024
+
+* Feat: Add static param [isDebugPrint] decides whether printing only on debug mode.
