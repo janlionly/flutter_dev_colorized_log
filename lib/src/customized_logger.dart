@@ -4,6 +4,7 @@
  */
 import 'dart:async';
 import 'dart:developer' as dev;
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
@@ -56,31 +57,34 @@ class DevColorizedLog {
     Object? error,
     StackTrace? stackTrace
     }) {
-    if (!enable) {
-      return;
-    }
-    if (isLog != null && !isLog) {
-      return;
-    }
-    if (isMultConsole != null && isMultConsole == true) {
-      if (isDebugPrint) {
-        debugPrint('${fileInfo??''}$msg');
+    void logging() {
+      if (isMultConsole != null && isMultConsole == true) {
+        if (isDebugPrint) {
+          debugPrint('${fileInfo??''}$msg');
+        } else {
+          // ignore: avoid_print
+          print('${fileInfo??''}$msg');
+        }
+        
       } else {
-        // ignore: avoid_print
-        print('${fileInfo??''}$msg');
+        dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
+          time: time,
+          sequenceNumber: sequenceNumber,
+          level: level,
+          name: name,
+          zone: zone,
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
-      
-    } else {
-      dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
-        time: time,
-        sequenceNumber: sequenceNumber,
-        level: level,
-        name: name,
-        zone: zone,
-        error: error,
-        stackTrace: stackTrace,
-      );
     }
-
+    if (isLog != null && isLog) {
+      logging();
+    }
+    else if (enable) {
+      if (isLog == null || isLog) {
+        logging();
+      }
+    }
   }
 }

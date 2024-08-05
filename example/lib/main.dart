@@ -93,10 +93,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
     Dev.logBlink('Colorized text blink', isSlow: true);
-    Dev.log('========================Level Log End ======================', isLog: false);
+    Dev.log('========================Level Log End ======================', isLog: true);
 
     String text = 'Hello World!';
-    Dev.print('Dev text print: $text', isDebug: false);
+    Dev.print('Dev text print: $text', isDebug: false, isLog: true);
   }
 
   @override
