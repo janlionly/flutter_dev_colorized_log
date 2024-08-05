@@ -99,6 +99,15 @@ class _MyHomePageState extends State<MyHomePage> {
     String text = 'Hello World!';
     Dev.print('Dev text print: $text', isDebug: false, isLog: true);
     Dev.print('Dev text print2: $text', isLog: true);
+
+    try {
+      final List a = [];
+      final x = a[9] + 3;
+      Dev.print(x);
+    }
+    catch(e) {
+      Dev.print(e);
+    }
   }
 
   @override

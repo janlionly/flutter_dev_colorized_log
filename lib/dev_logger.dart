@@ -6,12 +6,13 @@ import 'dart:async';
 import 'src/customized_logger.dart';
 
 /// @param static [enable]: whether log msg.
+/// @param static [isDebugPrint]: whether the method [Dev.print] printing only on debug mode.
 /// @param static [isLogFileLocation]: whether log the location file info.
 /// @pararm static [defaultColorInt]: the color int of log text.
 class Dev {
   static bool enable = true;
-  static bool isLogFileLocation = true;
   static bool? isDebugPrint;
+  static bool isLogFileLocation = true;
   static int defaultColorInt = 0;
   
   /// Default color log
@@ -48,11 +49,12 @@ class Dev {
     );
   }
   /// log supportting on multiple consoles
-  /// @param[isDebug]: default printing only on debug mode.
-  static void print(String msg, {bool? isLog, String? fileLocation, bool? isDebug}) {
+  /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
+  static void print(Object? object, {bool? isLog, String? fileLocation, bool? isDebug}) {
     final String fileInfo = Dev.isLogFileLocation ? 
     (fileLocation != null ? '($fileLocation): ' : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
      : '';
+    String msg = "$object";
     DevColorizedLog.logCustom(msg,
       enable: Dev.enable,
       isLog: isLog, 
