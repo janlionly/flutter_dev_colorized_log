@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     Dev.enable = true;
-    // Dev.isLogFileInfo = false;
+    // Dev.isLogFileLocation = false;
     Dev.defaultColorInt = 0;
     Dev.log('==========================All Color Log========================');
     printCustomText();
@@ -94,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.logError('Colorized text Error');
     Dev.logBlink('Colorized text blink', isSlow: true);
     Dev.log('========================Level Log End ======================', isLog: false);
+
+    String text = 'Hello World!';
+    Dev.print('Dev text print: $text', isDebug: false);
   }
 
   @override

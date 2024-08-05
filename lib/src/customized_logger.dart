@@ -5,11 +5,15 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
+
 class DevColorizedLog {
   static void logCustom(String msg, {
     bool enable = true,
     int colorInt = 0, 
-    bool? isLog, 
+    bool? isLog,
+    bool? isMultConsole,
+    bool isDebugPrint = true,
     String? fileInfo,
     DateTime? time,
     int? sequenceNumber,
@@ -24,6 +28,8 @@ class DevColorizedLog {
       enable: enable,
       colorInt: colorInt,
       isLog: isLog,
+      isMultConsole: isMultConsole,
+      isDebugPrint: isDebugPrint,
       fileInfo: fileInfo,
       time: time,
       sequenceNumber: sequenceNumber,
@@ -38,7 +44,9 @@ class DevColorizedLog {
   static void _custom(String msg, {
     bool enable = true,
     int colorInt = 0, 
-    bool? isLog, 
+    bool? isLog,
+    bool? isMultConsole,
+    bool isDebugPrint = true,
     String? fileInfo,
     DateTime? time,
     int? sequenceNumber,
@@ -54,14 +62,25 @@ class DevColorizedLog {
     if (isLog != null && !isLog) {
       return;
     }
-    dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
-      time: time,
-      sequenceNumber: sequenceNumber,
-      level: level,
-      name: name,
-      zone: zone,
-      error: error,
-      stackTrace: stackTrace,
-    );
+    if (isMultConsole != null && isMultConsole == true) {
+      if (isDebugPrint) {
+        debugPrint('${fileInfo??''}$msg');
+      } else {
+        // ignore: avoid_print
+        print('${fileInfo??''}$msg');
+      }
+      
+    } else {
+      dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
+        time: time,
+        sequenceNumber: sequenceNumber,
+        level: level,
+        name: name,
+        zone: zone,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
   }
 }

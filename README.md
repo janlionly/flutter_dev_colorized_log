@@ -11,7 +11,7 @@ See examples to `/example` folder.
 ```dart
 // Global settings:
 Dev.enable = true; // whether log msg
-Dev.isLogFileInfo = true; // whether log the location file info
+Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 
 // Log usage:
@@ -21,6 +21,9 @@ Dev.logSuccess('Colorized text Success'); // green text
 Dev.logWarning('Colorized text Warning'); // yellow text
 Dev.logError('Colorized text Error'); // red text
 Dev.logBlink('Colorized text blink', isSlow: true, isLog: true); // blink orange text
+
+/// 打印语句支持在多个控制台（原生+flutter）输出：
+Dev.print('Dev text print');
 ```
 
 ## Author
