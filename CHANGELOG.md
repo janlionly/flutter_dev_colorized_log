@@ -29,3 +29,7 @@
 ## [1.1.4] - 5 Aug 2024
 
 * Feat: Add static param [isDebugPrint] decides whether printing only on debug mode.
+
+## [1.1.5] - 5 Aug 2024
+
+* Feat: print method param type updated.
