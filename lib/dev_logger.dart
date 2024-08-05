@@ -15,6 +15,7 @@ class Dev {
 
   /// Default color log
   /// @param[colorInt]: 0 to 107
+  /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
   static void log(String msg, {
     bool? isLog, 
     int? colorInt,
@@ -45,7 +46,8 @@ class Dev {
       stackTrace: stackTrace,
     );
   }
-
+  /// log supportting on multiple consoles
+  /// @param[isDebug]: defaulut is false, log on release mode if set to true.
   static void print(String msg, {bool? isLog, String? fileLocation, bool isDebug = true}) {
     final String fileInfo = Dev.isLogFileLocation ? 
     (fileLocation != null ? '($fileLocation): ' : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')

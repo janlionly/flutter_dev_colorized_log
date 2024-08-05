@@ -21,3 +21,7 @@
 ## [1.1.2] - 5 Aug 2024
 
 * Feat: Add print to support log showing on multiple consoles.
+  
+## [1.1.3] - 5 Aug 2024
+
+* Feat: Param [isLog] set to true to log anyway.
