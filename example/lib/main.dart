@@ -82,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     Dev.enable = true;
     Dev.isDebugPrint = true;
-    // Dev.isLogFileLocation = false;
+    Dev.isLogFileLocation = true;
     Dev.defaultColorInt = 0;
     Dev.log('==========================All Color Log========================');
     printCustomText();
