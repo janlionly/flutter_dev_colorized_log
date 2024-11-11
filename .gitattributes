@@ -1,0 +1,3 @@
+# direct dart
+*.* linguist-language=Dart
+project-docs/* linguist-documentation
