@@ -33,3 +33,7 @@
 ## [1.1.5] - 5 Aug 2024
 
 * Feat: print method param type updated.
+
+## [1.1.6] - 29 Nov 2024
+
+* Feat: Add custom function to support your process of log.

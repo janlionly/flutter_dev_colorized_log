@@ -5,6 +5,63 @@ void main() {
   runApp(const MyApp());
 }
 
+class UITextView extends StatefulWidget {
+  final String initialText;
+  final TextStyle? textStyle;
+
+  const UITextView({
+    Key? key,
+    this.initialText = "",
+    this.textStyle,
+  }) : super(key: key);
+
+  @override
+  _UITextViewState createState() => _UITextViewState();
+}
+
+class _UITextViewState extends State<UITextView> {
+  late String _text;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _text = widget.initialText;
+  }
+
+  void appendText(String newText) {
+    setState(() {
+      _text += "\n$newText";
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Text(
+          _text,
+          style: widget.textStyle ?? TextStyle(fontSize: 16.0),
+        ),
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -57,6 +114,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  final GlobalKey<_UITextViewState> textViewKey = GlobalKey<_UITextViewState>();
 
   void _incrementCounter() {
     setState(() {
@@ -68,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter = (_counter + 1) % 108;
     });
     Dev.log('==========================Click to Log========================');
-    Dev.log('Colorized text custom with colorInt: $_counter', colorInt: _counter);
+    Dev.log('Colorized text custom with colorInt: $_counter', colorInt: _counter, execFinalFunc: true);
   }
 
   void printCustomText() {
@@ -84,6 +142,11 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isDebugPrint = true;
     Dev.isLogFileLocation = true;
     Dev.defaultColorInt = 0;
+    Dev.customFinalFunc = (msg) {
+      textViewKey.currentState?.appendText(msg);
+    };
+
+
     Dev.log('==========================All Color Log========================');
     printCustomText();
 
@@ -97,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.log('========================Level Log End ======================', isLog: true);
 
     String text = 'Hello World!';
-    Dev.print('Dev text print: $text', isDebug: false, isLog: true);
+    Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true);
     Dev.print('Dev text print2: $text', isLog: true);
 
     try {
@@ -108,6 +171,23 @@ class _MyHomePageState extends State<MyHomePage> {
     catch(e) {
       Dev.print(e);
     }
+
+    Future<void>.delayed(Duration(seconds: 1), ()=> allLevelLog());
+  }
+
+  void allLevelLog() {
+    Dev.log('==========================Level Log========================', name: 'logLev', execFinalFunc: true);
+    Dev.log('Colorized text log', fileLocation: 'main.dart:90xx', execFinalFunc: true);
+    Dev.logInfo('Colorized text Info', execFinalFunc: true);
+    Dev.logSuccess('Colorized text Success', execFinalFunc: true);
+    Dev.logWarning('Colorized text Warning', execFinalFunc: true);
+    Dev.logError('Colorized text Error', execFinalFunc: true);
+    Dev.logBlink('Colorized text blink', isSlow: true, execFinalFunc: true);
+    Dev.log('========================Level Log End ======================', isLog: true, execFinalFunc: true);
+
+    String text = 'Hello World!';
+    Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true, execFinalFunc: true);
+    Dev.print('Dev text print2: $text', isLog: true, execFinalFunc: true);
   }
 
   @override
@@ -146,8 +226,16 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
+            Expanded(
+              child: UITextView(
+                key: textViewKey,
+                initialText: "Log Infos",
+                textStyle: TextStyle(fontSize: 16.0, color: Colors.black),
+              )
+            ),
+            const SizedBox(height: 20),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -155,6 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -162,7 +251,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

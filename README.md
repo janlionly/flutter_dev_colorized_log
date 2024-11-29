@@ -6,24 +6,36 @@ A Flutter package for logging colorized text in developer mode.
 
 ## Usage
 
-See examples to `/example` folder.
+See examples to `/example` folder, more please run example project.
 
 ```dart
-// Global settings:
+/* Global settings:*/
 Dev.enable = true; // whether log msg
 Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
+Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
-// Log usage:
+// custom function to support your process of log
+Dev.customFinalFunc = (msg) {
+	// e.g.: your custom write msg to file  
+  writeToFile(msg);
+};
+// then every level log func contains execFinalFunc param:
+Dev.log('Colorized text log to your process of log', execFinalFunc: true);
+
+/* Log usage: */
 Dev.log('Colorized text log'); // default yellow text
 Dev.logInfo('Colorized text Info'); // blue text
-Dev.logSuccess('Colorized text Success'); // green text
+Dev.logSuccess('Colorized text Success', execFinalFunc: true); // green text
 Dev.logWarning('Colorized text Warning'); // yellow text
 Dev.logError('Colorized text Error'); // red text
 Dev.logBlink('Colorized text blink', isSlow: true, isLog: true); // blink orange text
 
-/// 打印语句支持在多个控制台（原生+flutter）输出：
-Dev.print('Dev text print');
+// Support to log on multi platform consoles like Xcode and VS Code
+Dev.print('Dev text print', isDebug: true); // default log only on debug mode
+
+// Others:
+Dev.log('Colorized text log other customs', fileLocation: 'main.dart:90xx', colorInt: 96);
 ```
 
 ## Author
