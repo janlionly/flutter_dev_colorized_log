@@ -20,6 +20,11 @@ Dev.customFinalFunc = (msg) {
 	// e.g.: your custom write msg to file  
   writeToFile(msg);
 };
+
+// V1.2.0 Execute the custom function
+Dev.exe('!!! Exec Colorized text Info Without log', level: DevLevel.logInf, isMultConsole: true, isLog: false, colorInt: 101);
+Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
+
 // then every level log func contains execFinalFunc param:
 Dev.log('Colorized text log to your process of log', execFinalFunc: true);
 

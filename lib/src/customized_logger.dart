@@ -60,36 +60,29 @@ class DevColorizedLog {
     StackTrace? stackTrace,
     bool? execFinalFunc,
     }) {
+     bool isExe = execFinalFunc != null && execFinalFunc;
+     final finalName = isExe ? '$name&Exe' : name;
+
     void logging() {
       if (isMultConsole != null && isMultConsole == true) {
         if (isDebugPrint == null || isDebugPrint) {
-          debugPrint('${fileInfo??''}$msg');
-          if (execFinalFunc != null && execFinalFunc) {
-            Dev.customFinalFunc?.call('[debugPrint]${fileInfo??''}$msg');
-          }
+          debugPrint('[$finalName]${fileInfo??''}$msg');
         } else {
           // ignore: avoid_print
-          print('${fileInfo??''}$msg');
-          if (execFinalFunc != null && execFinalFunc) {
-            Dev.customFinalFunc?.call('[print]${fileInfo??''}$msg');
-          }
+          print('[$finalName]${fileInfo??''}$msg');
         }
       } else {
         dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
-          name: name,
+          name: finalName,
           zone: zone,
           error: error,
           stackTrace: stackTrace,
         );
-        if (execFinalFunc != null && execFinalFunc) {
-          Dev.customFinalFunc?.call('[$name]${fileInfo??''}$msg');
-        }
       }
     }
-
     if (isLog != null && isLog) {
       logging();
     }
@@ -97,6 +90,10 @@ class DevColorizedLog {
       if (isLog == null || isLog) {
         logging();
       }
+    }
+
+    if (isExe) {
+      Dev.customFinalFunc?.call('[$finalName]${fileInfo??''}$msg');
     }
   }
 }
