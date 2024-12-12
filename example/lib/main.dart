@@ -163,6 +163,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true);
     Dev.print('Dev text print2: $text', isLog: true);
 
+    Dev.print('Dev text pirnt with the given level', level: DevLevel.logErr);
+
     try {
       final List a = [];
       final x = a[9] + 3;
@@ -172,7 +174,19 @@ class _MyHomePageState extends State<MyHomePage> {
       Dev.print(e);
     }
 
-    Future<void>.delayed(Duration(seconds: 1), ()=> allLevelLog());
+    Future<void>.delayed(const Duration(seconds: 1), ()=> allLevelLog());
+
+    Future<void>.delayed(const Duration(seconds: 2), ()=> exeLog());
+  }
+
+  void exeLog() {
+    Dev.exe('!!!!1.Exec Colorized text');
+    Dev.exe('!!!!2.Exec Colorized text Warning', level: DevLevel.logWar);
+    Dev.exe('!!!!3.Exec Colorized text Warning ColorInt', level: DevLevel.logWar, colorInt: 101);
+    Dev.exe('!!!!4.Exec Colorized text Success Without logging', level: DevLevel.logSuc, isLog: false);
+    Dev.exe('!!!!5.Exec Colorized text Error With debug print', level: DevLevel.logErr, isMultConsole: true);
+    Dev.exe('!!!!6.Exec Colorized text Info With unlti print', level: DevLevel.logInf, isMultConsole: true, isDebug: false);
+    Dev.exe('!!!!7.Exec Colorized text Success Without printing', level: DevLevel.logSuc, isMultConsole: true, isLog: false);
   }
 
   void allLevelLog() {
@@ -186,8 +200,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.log('========================Level Log End ======================', isLog: true, execFinalFunc: true);
 
     String text = 'Hello World!';
-    Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true, execFinalFunc: true);
-    Dev.print('Dev text print2: $text', isLog: true, execFinalFunc: true);
+    Dev.print('Dev text print Not Debug execFinalFunc: $text', isDebug: false, isLog: true, execFinalFunc: true);
+    Dev.print('Dev text print2 execFinalFunc: $text', isLog: true, execFinalFunc: true);
+
+    Dev.print('Dev text pirnt with the given level exec!!!', level: DevLevel.logSuc, isLog: false, execFinalFunc: true);
   }
 
   @override

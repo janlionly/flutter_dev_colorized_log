@@ -37,3 +37,7 @@
 ## [1.1.6] - 29 Nov 2024
 
 * Feat: Add custom function to support your process of log.
+
+## [1.2.0] - 12 Dec 2024
+
+* Feat: Add static exec custom function and add param [level] decides the log level.

@@ -5,6 +5,15 @@
 import 'dart:async';
 import 'src/customized_logger.dart';
 
+enum DevLevel {
+  logNor,
+  logInf,
+  logSuc,
+  logBlk,
+  logWar,
+  logErr
+}
+
 /// @param static [enable]: whether log msg.
 /// @param static [isDebugPrint]: whether the method [Dev.print] printing only on debug mode.
 /// @param static [isLogFileLocation]: whether log the location file info.
@@ -19,7 +28,8 @@ class Dev {
   /// Default color log
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
-  static void log(String msg, {
+  static void log(
+    String msg, {
     bool? isLog, 
     int? colorInt,
     String? fileLocation,
@@ -54,18 +64,65 @@ class Dev {
   }
   /// log supportting on multiple consoles
   /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
-  static void print(Object? object, {bool? isLog, String? fileLocation, bool? isDebug, bool? execFinalFunc}) {
+  static void print(
+    Object? object, {
+    DevLevel level = DevLevel.logNor, 
+    bool? isLog, 
+    String? fileLocation, 
+    bool? isDebug, 
+    bool? execFinalFunc
+    }) {
     final String fileInfo = Dev.isLogFileLocation ? 
     (fileLocation != null ? '($fileLocation): ' : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
      : '';
     String msg = "$object";
-    DevColorizedLog.logCustom(msg,
+    bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
+    var name = level.toString().split('.').last;
+
+    final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
+    name = name.replaceAll('log', prefix);
+
+    DevColorizedLog.logCustom(
+      msg,
       enable: Dev.enable,
       isLog: isLog, 
       isMultConsole: true,
-      isDebugPrint: isDebug ?? Dev.isDebugPrint,
+      isDebugPrint: isDbgPrint,
       fileInfo: fileInfo,
+      name: name,
       execFinalFunc: execFinalFunc,
+    );
+  }
+
+  /// Execute custom final func with purple text or blue text with mult console 
+  static void exe(
+    String msg, {
+    DevLevel level = DevLevel.logNor, 
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug, 
+    int? colorInt
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    bool isMult = isMultConsole != null && isMultConsole;
+    var name = level.toString().split('.').last;
+    bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
+
+    if (isMult) {
+      final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
+      name = name.replaceAll('log', prefix);
+    }
+
+    DevColorizedLog.logCustom(
+      msg, 
+      enable: Dev.enable, 
+      colorInt: colorInt ?? 95, 
+      isLog: isLog,
+      isMultConsole: isMultConsole,
+      isDebugPrint: isDbgPrint,
+      fileInfo: fileInfo, 
+      name: name,
+      execFinalFunc: true,
     );
   }
   
