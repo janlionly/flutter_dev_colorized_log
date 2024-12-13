@@ -76,7 +76,7 @@ class DevColorizedLog {
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
-          name: finalName,
+          name: '\x1B[${colorInt}m$finalName\x1B[0m',
           zone: zone,
           error: error,
           stackTrace: stackTrace,
