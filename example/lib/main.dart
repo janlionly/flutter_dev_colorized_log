@@ -180,6 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void exeLog() {
+    Dev.exe('!!!!1.Exec Colorized text Success', level: DevLevel.logSuc);
     Dev.exe('!!!!1.Exec Colorized text');
     Dev.exe('!!!!2.Exec Colorized text Warning', level: DevLevel.logWar);
     Dev.exe('!!!!3.Exec Colorized text Warning ColorInt', level: DevLevel.logWar, colorInt: 101);
@@ -187,16 +188,23 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.exe('!!!!5.Exec Colorized text Error With debug print', level: DevLevel.logErr, isMultConsole: true);
     Dev.exe('!!!!6.Exec Colorized text Info With unlti print', level: DevLevel.logInf, isMultConsole: true, isDebug: false);
     Dev.exe('!!!!7.Exec Colorized text Success Without printing', level: DevLevel.logSuc, isMultConsole: true, isLog: false);
+
+    Dev.exe("Exec Normal");
+    Dev.exeInfo("Exec Info");
+    Dev.exeSuccess("Exec Success");
+    Dev.exeWarning("Exec Warning");
+    Dev.exeError("Exec Error");
+    Dev.exeBlink("Exec Blink");
   }
 
   void allLevelLog() {
     Dev.log('==========================Level Log========================', name: 'logLev', execFinalFunc: true);
-    Dev.log('Colorized text log', fileLocation: 'main.dart:90xx', execFinalFunc: true);
-    Dev.logInfo('Colorized text Info', execFinalFunc: true);
-    Dev.logSuccess('Colorized text Success', execFinalFunc: true);
-    Dev.logWarning('Colorized text Warning', execFinalFunc: true);
-    Dev.logError('Colorized text Error', execFinalFunc: true);
-    Dev.logBlink('Colorized text blink', isSlow: true, execFinalFunc: true);
+    Dev.log('Colorized text log execFinalFunc: true', fileLocation: 'main.dart:90xx', execFinalFunc: true);
+    Dev.logInfo('Colorized text Info execFinalFunc: true', execFinalFunc: true);
+    Dev.logSuccess('Colorized text Success execFinalFunc: true', execFinalFunc: true);
+    Dev.logWarning('Colorized text Warning execFinalFunc: true', execFinalFunc: true);
+    Dev.logError('Colorized text Error execFinalFunc: true', execFinalFunc: true);
+    Dev.logBlink('Colorized text blink execFinalFunc: true', isSlow: true, execFinalFunc: true);
     Dev.log('========================Level Log End ======================', isLog: true, execFinalFunc: true);
 
     String text = 'Hello World!';
@@ -204,6 +212,12 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.print('Dev text print2 execFinalFunc: $text', isLog: true, execFinalFunc: true);
 
     Dev.print('Dev text pirnt with the given level exec!!!', level: DevLevel.logSuc, isLog: false, execFinalFunc: true);
+
+    Dev.log('1.log success level', level: DevLevel.logSuc);
+    Dev.logSuccess('2.log success level');
+    Dev.log('1.log success level and exec', level: DevLevel.logSuc, execFinalFunc: true);
+    Dev.exe('2.log success level and exec', level: DevLevel.logSuc);
+    Dev.exeSuccess('3.log success level and exec');
   }
 
   @override

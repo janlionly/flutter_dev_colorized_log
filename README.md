@@ -21,9 +21,27 @@ Dev.customFinalFunc = (msg) {
   writeToFile(msg);
 };
 
+// V1.2.1
+Dev.exe("Exec Normal");
+Dev.exeInfo("Exec Info");
+Dev.exeSuccess("Exec Success");
+Dev.exeWarning("Exec Warning");
+Dev.exeError("Exec Error");
+Dev.exeBlink("Exec Blink");
+Dev.exe("Exec Normal without log", isLog: false);
+
+Dev.log('1.log success level', level: DevLevel.logSuc);
+Dev.logSuccess('2.log success level');
+Dev.log('1.log success level and exec', level: DevLevel.logSuc, execFinalFunc: true);
+Dev.exe('2.log success level and exec', level: DevLevel.logSuc);
+Dev.exeSuccess('3.log success level and exec');
+// END
+
 // V1.2.0 Execute the custom function
+Dev.exe('!!! Exec Normal');
 Dev.exe('!!! Exec Colorized text Info Without log', level: DevLevel.logInf, isMultConsole: true, isLog: false, colorInt: 101);
 Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
+// END
 
 // then every level log func contains execFinalFunc param:
 Dev.log('Colorized text log to your process of log', execFinalFunc: true);

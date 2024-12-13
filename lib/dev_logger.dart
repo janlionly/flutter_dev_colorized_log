@@ -9,9 +9,9 @@ enum DevLevel {
   logNor,
   logInf,
   logSuc,
-  logBlk,
   logWar,
-  logErr
+  logErr,
+  logBlk
 }
 
 /// @param static [enable]: whether log msg.
@@ -24,38 +24,59 @@ class Dev {
   static bool isLogFileLocation = true;
   static int defaultColorInt = 0;
   static Function(String)? customFinalFunc;
+
+  static final _logColorMap = {
+    DevLevel.logNor: defaultColorInt,
+    DevLevel.logInf: 96,
+    DevLevel.logSuc: 92,
+    DevLevel.logWar: 93,
+    DevLevel.logErr: 91,
+    DevLevel.logBlk: 5,    
+  };
+
+  static final _exeColorMap = {
+    DevLevel.logNor: 95,
+    DevLevel.logInf: 106,
+    DevLevel.logSuc: 102,
+    DevLevel.logWar: 103,
+    DevLevel.logErr: 101,
+    DevLevel.logBlk: 6,
+  };
   
   /// Default color log
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
   static void log(
     String msg, {
+    DevLevel level = DevLevel.logNor,
     bool? isLog, 
     int? colorInt,
     String? fileLocation,
     DateTime? time,
     int? sequenceNumber,
-    int level = 0,
-    String name = 'logNor',
+    String? name,
     Zone? zone,
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
     }) {
-    int ci = colorInt ?? defaultColorInt;
+    int ci = colorInt ?? (_logColorMap[level] ?? defaultColorInt);
     final String fileInfo = Dev.isLogFileLocation ? 
     (fileLocation != null ? '($fileLocation): ' : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
      : '';
+    final levelMap = {DevLevel.logWar: 1000, DevLevel.logErr: 2000};
+    final theName = name ?? level.toString().split('.').last;
+
     DevColorizedLog.logCustom(
       msg,
       enable: Dev.enable,
-      colorInt: ci, 
+      colorInt: execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci, 
       isLog: isLog, 
       fileInfo: fileInfo,
       time: time,
       sequenceNumber: sequenceNumber,
-      level: level,
-      name: name,
+      level: levelMap[level] ?? 0,
+      name: theName,
       zone: zone,
       error: error,
       stackTrace: stackTrace,
@@ -66,6 +87,7 @@ class Dev {
   /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
   static void print(
     Object? object, {
+    String? name,
     DevLevel level = DevLevel.logNor, 
     bool? isLog, 
     String? fileLocation, 
@@ -77,10 +99,10 @@ class Dev {
      : '';
     String msg = "$object";
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
-    var name = level.toString().split('.').last;
+    var theName = name ?? level.toString().split('.').last;
 
     final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-    name = name.replaceAll('log', prefix);
+    theName = theName.replaceAll('log', prefix);
 
     DevColorizedLog.logCustom(
       msg,
@@ -89,7 +111,7 @@ class Dev {
       isMultConsole: true,
       isDebugPrint: isDbgPrint,
       fileInfo: fileInfo,
-      name: name,
+      name: theName,
       execFinalFunc: execFinalFunc,
     );
   }
@@ -97,42 +119,137 @@ class Dev {
   /// Execute custom final func with purple text or blue text with mult console 
   static void exe(
     String msg, {
+    String? name,
     DevLevel level = DevLevel.logNor, 
     bool? isLog, 
     bool? isMultConsole, 
     bool? isDebug, 
-    int? colorInt
+    int? colorInt,
+    String? fileInfo
     }) {
-    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    int ci = colorInt ?? (_exeColorMap[level] ?? 95);
+    final String theFileInfo = Dev.isLogFileLocation ? (fileInfo ?? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ') : '';
     bool isMult = isMultConsole != null && isMultConsole;
-    var name = level.toString().split('.').last;
+    var theName = name ?? level.toString().split('.').last;
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
+    final levelMap = {DevLevel.logWar: 1000, DevLevel.logErr: 2000};
 
     if (isMult) {
       final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-      name = name.replaceAll('log', prefix);
+      theName = theName.replaceAll('log', prefix);
     }
 
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: colorInt ?? 95, 
+      colorInt: ci, 
       isLog: isLog,
       isMultConsole: isMultConsole,
       isDebugPrint: isDbgPrint,
-      fileInfo: fileInfo, 
-      name: name,
+      fileInfo: theFileInfo, 
+      name: theName,
+      level: levelMap[level] ?? 0,
       execFinalFunc: true,
     );
   }
-  
+
+  static void exeInfo(
+    String msg, {
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug,
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    Dev.exe(
+      msg, 
+      isLog: isLog, 
+      isMultConsole: isMultConsole, 
+      isDebug: isDebug, 
+      fileInfo: fileInfo, 
+      colorInt: _exeColorMap[DevLevel.logInf], 
+      level: DevLevel.logInf
+    );
+  }
+
+  static void exeSuccess(
+    String msg, {
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug, 
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    Dev.exe(
+      msg, 
+      isLog: isLog, 
+      isMultConsole: isMultConsole, 
+      isDebug: isDebug, 
+      fileInfo: fileInfo, 
+      colorInt: _exeColorMap[DevLevel.logSuc], 
+      level: DevLevel.logSuc
+    );
+  }
+
+  static void exeWarning(
+    String msg, {
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug, 
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    Dev.exe(
+      msg, 
+      isLog: isLog, 
+      isMultConsole: isMultConsole, 
+      isDebug: isDebug, 
+      fileInfo: fileInfo, 
+      colorInt: _exeColorMap[DevLevel.logWar], 
+      level: DevLevel.logWar
+    );
+  }
+
+  static void exeError(
+    String msg, {
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug, 
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    Dev.exe(
+      msg, 
+      isLog: isLog, 
+      isMultConsole: isMultConsole, 
+      isDebug: isDebug, 
+      fileInfo: fileInfo, 
+      colorInt: _exeColorMap[DevLevel.logErr], 
+      level: DevLevel.logErr
+    );
+  }
+
+  static void exeBlink(
+    String msg, {
+    bool? isLog, 
+    bool? isMultConsole, 
+    bool? isDebug, 
+    }) {
+    final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
+    Dev.exe(
+      msg, 
+      isLog: isLog, 
+      isMultConsole: isMultConsole, 
+      isDebug: isDebug, 
+      fileInfo: fileInfo, 
+      colorInt: _exeColorMap[DevLevel.logBlk], 
+      level: DevLevel.logBlk
+    );
+  }
+
   /// Blink orange text
   static void logBlink(String msg, {bool? isLog, bool isSlow = true, bool? execFinalFunc}) {
     final String fileInfo = Dev.isLogFileLocation ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ' : '';
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: isSlow ? 5 : 6, 
+      colorInt: execFinalFunc != null && execFinalFunc ? 6 : (isSlow ? 5 : 6), 
       isLog: isLog, 
       fileInfo: fileInfo, 
       name: 'logBlk',
@@ -147,7 +264,7 @@ class Dev {
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: 96, 
+      colorInt: execFinalFunc != null && execFinalFunc ? _exeColorMap[DevLevel.logInf]! : _logColorMap[DevLevel.logInf]!, 
       isLog: isLog, 
       fileInfo: fileInfo, 
       name: 'logInf',
@@ -162,7 +279,7 @@ class Dev {
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: 92, 
+      colorInt: execFinalFunc != null && execFinalFunc ? _exeColorMap[DevLevel.logSuc]! : _logColorMap[DevLevel.logSuc]!, 
       isLog: isLog, 
       fileInfo: fileInfo, 
       name: 'logSuc',
@@ -177,7 +294,7 @@ class Dev {
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: 93, 
+      colorInt: execFinalFunc != null && execFinalFunc ? _exeColorMap[DevLevel.logWar]! : _logColorMap[DevLevel.logWar]!, 
       isLog: isLog, 
       fileInfo: fileInfo, 
       level: 1000, 
@@ -193,7 +310,7 @@ class Dev {
     DevColorizedLog.logCustom(
       msg, 
       enable: Dev.enable, 
-      colorInt: 91, 
+      colorInt: execFinalFunc != null && execFinalFunc ? _exeColorMap[DevLevel.logErr]! : _logColorMap[DevLevel.logErr]!, 
       isLog: isLog, 
       fileInfo: fileInfo, 
       level: 2000, 
