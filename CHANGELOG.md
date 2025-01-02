@@ -49,3 +49,7 @@
 ## [1.2.2] - 2 Jan 2025
 
 * Feat: Add static params [isLogShowDateTime], [isExeWithDateTime], [isExeWithShowLog].
+
+## [1.2.3] - 2 Jan 2025
+
+* Feat: Adjust format.

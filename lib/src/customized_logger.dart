@@ -63,7 +63,7 @@ class DevColorizedLog {
      bool isExe = execFinalFunc != null && execFinalFunc;
      final finalName = isExe ? '$name&Exe' : name;
      DateTime now = DateTime.now();
-     String formattedNow = Dev.isLogShowDateTime ? ' $now ' : '';
+     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
 
     void logging() {
       if (isExe && !Dev.isExeWithShowLog) {
