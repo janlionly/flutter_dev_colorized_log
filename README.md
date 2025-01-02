@@ -20,6 +20,10 @@ Dev.customFinalFunc = (msg) {
 	// e.g.: your custom write msg to file  
   writeToFile(msg);
 };
+// V1.2.2
+Dev.isLogShowDateTime = true; // whether log the date time
+Dev.isExeWithShowLog = true; // whether execFinalFunc with showing log
+Dev.isExeWithDateTime = false; // whether execFinalFunc with date time
 
 // V1.2.1
 Dev.exe("Exec Normal");

@@ -41,7 +41,11 @@
 ## [1.2.0] - 12 Dec 2024
 
 * Feat: Add static exec custom function and add param [level] decides the log level.
-* 
+  
 ## [1.2.1] - 13 Dec 2024
 
 * Feat: Add static exec custom functions with the log level.
+
+## [1.2.2] - 2 Jan 2025
+
+* Feat: Add static params [isLogShowDateTime], [isExeWithDateTime], [isExeWithShowLog].

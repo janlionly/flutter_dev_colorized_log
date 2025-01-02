@@ -25,6 +25,15 @@ class Dev {
   static int defaultColorInt = 0;
   static Function(String)? customFinalFunc;
 
+  /// whether log the date time
+  static bool isLogShowDateTime = true;
+
+   /// whether execFinalFunc with date time
+  static bool isExeWithDateTime = false;
+
+  /// whether execFinalFunc with showing log
+  static bool isExeWithShowLog = true;
+
   static final _logColorMap = {
     DevLevel.logNor: defaultColorInt,
     DevLevel.logInf: 96,

@@ -62,17 +62,22 @@ class DevColorizedLog {
     }) {
      bool isExe = execFinalFunc != null && execFinalFunc;
      final finalName = isExe ? '$name&Exe' : name;
+     DateTime now = DateTime.now();
+     String formattedNow = Dev.isLogShowDateTime ? ' $now ' : '';
 
     void logging() {
+      if (isExe && !Dev.isExeWithShowLog) {
+        return;
+      }
       if (isMultConsole != null && isMultConsole == true) {
         if (isDebugPrint == null || isDebugPrint) {
-          debugPrint('[$finalName]${fileInfo??''}$msg');
+          debugPrint('[$finalName]$formattedNow${fileInfo??''}$msg');
         } else {
           // ignore: avoid_print
-          print('[$finalName]${fileInfo??''}$msg');
+          print('[$finalName]$formattedNow${fileInfo??''}$msg');
         }
       } else {
-        dev.log('\x1B[${colorInt}m${fileInfo??''}$msg\x1B[0m', 
+        dev.log('\x1B[${colorInt}m$formattedNow${fileInfo??''}$msg\x1B[0m', 
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
@@ -93,7 +98,7 @@ class DevColorizedLog {
     }
 
     if (isExe) {
-      Dev.customFinalFunc?.call('[$finalName]${fileInfo??''}$msg');
+      Dev.customFinalFunc?.call('[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo??''}$msg');
     }
   }
 }

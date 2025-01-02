@@ -145,6 +145,9 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.customFinalFunc = (msg) {
       textViewKey.currentState?.appendText(msg);
     };
+    Dev.isLogShowDateTime = true;
+    Dev.isExeWithShowLog = true;
+    Dev.isExeWithDateTime = false;
 
 
     Dev.log('==========================All Color Log========================');
