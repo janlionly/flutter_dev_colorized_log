@@ -37,7 +37,7 @@ class _UITextViewState extends State<UITextView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
       );
     });
@@ -46,7 +46,7 @@ class _UITextViewState extends State<UITextView> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8.0),
@@ -55,7 +55,7 @@ class _UITextViewState extends State<UITextView> {
         controller: _scrollController,
         child: Text(
           _text,
-          style: widget.textStyle ?? TextStyle(fontSize: 16.0),
+          style: widget.textStyle ?? const TextStyle(fontSize: 16.0),
         ),
       ),
     );
@@ -265,7 +265,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: UITextView(
                 key: textViewKey,
                 initialText: "Log Infos",
-                textStyle: TextStyle(fontSize: 16.0, color: Colors.black),
+                textStyle: const TextStyle(fontSize: 16.0, color: Colors.black),
               )
             ),
             const SizedBox(height: 20),

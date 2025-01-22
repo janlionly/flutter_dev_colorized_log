@@ -53,3 +53,7 @@
 ## [1.2.3] - 2 Jan 2025
 
 * Feat: Adjust format.
+
+## [1.2.4] - 22 Jan 2025
+
+* Feat: Set default log is false.

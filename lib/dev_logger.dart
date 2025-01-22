@@ -19,7 +19,7 @@ enum DevLevel {
 /// @param static [isLogFileLocation]: whether log the location file info.
 /// @pararm static [defaultColorInt]: the color int of log text.
 class Dev {
-  static bool enable = true;
+  static bool enable = false;
   static bool? isDebugPrint;
   static bool isLogFileLocation = true;
   static int defaultColorInt = 0;
