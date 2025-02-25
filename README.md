@@ -15,7 +15,7 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
-// custom function to support your process of log
+// V1.1.6 custom function to support your process of log
 Dev.customFinalFunc = (msg) {
 	// e.g.: your custom write msg to file  
   writeToFile(msg);

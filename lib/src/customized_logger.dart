@@ -9,9 +9,10 @@ import 'package:dev_colorized_log/dev_logger.dart';
 import 'package:flutter/foundation.dart';
 
 class DevColorizedLog {
-  static void logCustom(String msg, {
+  static void logCustom(
+    String msg, {
     bool enable = true,
-    int colorInt = 0, 
+    int colorInt = 0,
     bool? isLog,
     bool? isMultConsole,
     bool? isDebugPrint,
@@ -24,7 +25,7 @@ class DevColorizedLog {
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
-    }) {
+  }) {
     _custom(
       msg,
       enable: enable,
@@ -44,9 +45,10 @@ class DevColorizedLog {
     );
   }
 
-  static void _custom(String msg, {
+  static void _custom(
+    String msg, {
     bool enable = true,
-    int colorInt = 0, 
+    int colorInt = 0,
     bool? isLog,
     bool? isMultConsole,
     bool? isDebugPrint,
@@ -59,11 +61,11 @@ class DevColorizedLog {
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
-    }) {
-     bool isExe = execFinalFunc != null && execFinalFunc;
-     final finalName = isExe ? '$name&Exe' : name;
-     DateTime now = DateTime.now();
-     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
+  }) {
+    bool isExe = execFinalFunc != null && execFinalFunc;
+    final finalName = isExe ? '$name&Exe' : name;
+    DateTime now = DateTime.now();
+    String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
 
     void logging() {
       if (isExe && !Dev.isExeWithShowLog) {
@@ -71,13 +73,14 @@ class DevColorizedLog {
       }
       if (isMultConsole != null && isMultConsole == true) {
         if (isDebugPrint == null || isDebugPrint) {
-          debugPrint('[$finalName]$formattedNow${fileInfo??''}$msg');
+          debugPrint('[$finalName]$formattedNow${fileInfo ?? ''}$msg');
         } else {
           // ignore: avoid_print
-          print('[$finalName]$formattedNow${fileInfo??''}$msg');
+          print('[$finalName]$formattedNow${fileInfo ?? ''}$msg');
         }
       } else {
-        dev.log('\x1B[${colorInt}m$formattedNow${fileInfo??''}$msg\x1B[0m', 
+        dev.log(
+          '\x1B[${colorInt}m$formattedNow${fileInfo ?? ''}$msg\x1B[0m',
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
@@ -88,17 +91,18 @@ class DevColorizedLog {
         );
       }
     }
+
     if (isLog != null && isLog) {
       logging();
-    }
-    else if (enable) {
+    } else if (enable) {
       if (isLog == null || isLog) {
         logging();
       }
     }
 
     if (isExe) {
-      Dev.customFinalFunc?.call('[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo??''}$msg');
+      Dev.customFinalFunc?.call(
+          '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$msg');
     }
   }
 }
