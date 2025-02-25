@@ -126,7 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter = (_counter + 1) % 108;
     });
     Dev.log('==========================Click to Log========================');
-    Dev.log('Colorized text custom with colorInt: $_counter', colorInt: _counter, execFinalFunc: true);
+    Dev.log('Colorized text custom with colorInt: $_counter',
+        colorInt: _counter, execFinalFunc: true);
   }
 
   void printCustomText() {
@@ -149,18 +150,19 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isExeWithShowLog = true;
     Dev.isExeWithDateTime = false;
 
-
     Dev.log('==========================All Color Log========================');
     printCustomText();
 
-    Dev.log('==========================Level Log========================', name: 'logLev');
+    Dev.log('==========================Level Log========================',
+        name: 'logLev');
     Dev.log('Colorized text log', fileLocation: 'main.dart:90xx');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
     Dev.logBlink('Colorized text blink', isSlow: true);
-    Dev.log('========================Level Log End ======================', isLog: true);
+    Dev.log('========================Level Log End ======================',
+        isLog: true);
 
     String text = 'Hello World!';
     Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true);
@@ -172,25 +174,29 @@ class _MyHomePageState extends State<MyHomePage> {
       final List a = [];
       final x = a[9] + 3;
       Dev.print(x);
-    }
-    catch(e) {
+    } catch (e) {
       Dev.print(e);
     }
 
-    Future<void>.delayed(const Duration(seconds: 1), ()=> allLevelLog());
+    Future<void>.delayed(const Duration(seconds: 1), () => allLevelLog());
 
-    Future<void>.delayed(const Duration(seconds: 2), ()=> exeLog());
+    Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
   }
 
   void exeLog() {
     Dev.exe('!!!!1.Exec Colorized text Success', level: DevLevel.logSuc);
     Dev.exe('!!!!1.Exec Colorized text');
     Dev.exe('!!!!2.Exec Colorized text Warning', level: DevLevel.logWar);
-    Dev.exe('!!!!3.Exec Colorized text Warning ColorInt', level: DevLevel.logWar, colorInt: 101);
-    Dev.exe('!!!!4.Exec Colorized text Success Without logging', level: DevLevel.logSuc, isLog: false);
-    Dev.exe('!!!!5.Exec Colorized text Error With debug print', level: DevLevel.logErr, isMultConsole: true);
-    Dev.exe('!!!!6.Exec Colorized text Info With unlti print', level: DevLevel.logInf, isMultConsole: true, isDebug: false);
-    Dev.exe('!!!!7.Exec Colorized text Success Without printing', level: DevLevel.logSuc, isMultConsole: true, isLog: false);
+    Dev.exe('!!!!3.Exec Colorized text Warning ColorInt',
+        level: DevLevel.logWar, colorInt: 101);
+    Dev.exe('!!!!4.Exec Colorized text Success Without logging',
+        level: DevLevel.logSuc, isLog: false);
+    Dev.exe('!!!!5.Exec Colorized text Error With debug print',
+        level: DevLevel.logErr, isMultConsole: true);
+    Dev.exe('!!!!6.Exec Colorized text Info With unlti print',
+        level: DevLevel.logInf, isMultConsole: true, isDebug: false);
+    Dev.exe('!!!!7.Exec Colorized text Success Without printing',
+        level: DevLevel.logSuc, isMultConsole: true, isLog: false);
 
     Dev.exe("Exec Normal");
     Dev.exeInfo("Exec Info");
@@ -201,24 +207,35 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void allLevelLog() {
-    Dev.log('==========================Level Log========================', name: 'logLev', execFinalFunc: true);
-    Dev.log('Colorized text log execFinalFunc: true', fileLocation: 'main.dart:90xx', execFinalFunc: true);
+    Dev.log('==========================Level Log========================',
+        name: 'logLev', execFinalFunc: true);
+    Dev.log('Colorized text log execFinalFunc: true',
+        fileLocation: 'main.dart:90xx', execFinalFunc: true);
     Dev.logInfo('Colorized text Info execFinalFunc: true', execFinalFunc: true);
-    Dev.logSuccess('Colorized text Success execFinalFunc: true', execFinalFunc: true);
-    Dev.logWarning('Colorized text Warning execFinalFunc: true', execFinalFunc: true);
-    Dev.logError('Colorized text Error execFinalFunc: true', execFinalFunc: true);
-    Dev.logBlink('Colorized text blink execFinalFunc: true', isSlow: true, execFinalFunc: true);
-    Dev.log('========================Level Log End ======================', isLog: true, execFinalFunc: true);
+    Dev.logSuccess('Colorized text Success execFinalFunc: true',
+        execFinalFunc: true);
+    Dev.logWarning('Colorized text Warning execFinalFunc: true',
+        execFinalFunc: true);
+    Dev.logError('Colorized text Error execFinalFunc: true',
+        execFinalFunc: true);
+    Dev.logBlink('Colorized text blink execFinalFunc: true',
+        isSlow: true, execFinalFunc: true);
+    Dev.log('========================Level Log End ======================',
+        isLog: true, execFinalFunc: true);
 
     String text = 'Hello World!';
-    Dev.print('Dev text print Not Debug execFinalFunc: $text', isDebug: false, isLog: true, execFinalFunc: true);
-    Dev.print('Dev text print2 execFinalFunc: $text', isLog: true, execFinalFunc: true);
+    Dev.print('Dev text print Not Debug execFinalFunc: $text',
+        isDebug: false, isLog: true, execFinalFunc: true);
+    Dev.print('Dev text print2 execFinalFunc: $text',
+        isLog: true, execFinalFunc: true);
 
-    Dev.print('Dev text pirnt with the given level exec!!!', level: DevLevel.logSuc, isLog: false, execFinalFunc: true);
+    Dev.print('Dev text pirnt with the given level exec!!!',
+        level: DevLevel.logSuc, isLog: false, execFinalFunc: true);
 
     Dev.log('1.log success level', level: DevLevel.logSuc);
     Dev.logSuccess('2.log success level');
-    Dev.log('1.log success level and exec', level: DevLevel.logSuc, execFinalFunc: true);
+    Dev.log('1.log success level and exec',
+        level: DevLevel.logSuc, execFinalFunc: true);
     Dev.exe('2.log success level and exec', level: DevLevel.logSuc);
     Dev.exeSuccess('3.log success level and exec');
   }
@@ -262,12 +279,11 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Expanded(
-              child: UITextView(
-                key: textViewKey,
-                initialText: "Log Infos",
-                textStyle: const TextStyle(fontSize: 16.0, color: Colors.black),
-              )
-            ),
+                child: UITextView(
+              key: textViewKey,
+              initialText: "Log Infos",
+              textStyle: const TextStyle(fontSize: 16.0, color: Colors.black),
+            )),
             const SizedBox(height: 20),
             const Text(
               'You have pushed the button this many times:',
@@ -285,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
-       // This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
