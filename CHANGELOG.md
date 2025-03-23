@@ -65,3 +65,7 @@
 ## [1.2.6] - 23 Mar 2025
 
 * Feat: Add global static param [isMultConsoleLog] to support multiple console logs.
+
+## [1.2.7] - 24 Mar 2025
+
+* Docs: Update README.md and dart formatter.

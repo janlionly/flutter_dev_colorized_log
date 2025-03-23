@@ -20,6 +20,9 @@ Dev.customFinalFunc = (msg) {
 	// e.g.: your custom write msg to file  
   writeToFile(msg);
 };
+// V1.2.6
+Dev.isMultConsoleLog = true; // whether log on multi platform consoles like Xcode, VS Code, Terminal, etc.
+
 // V1.2.2
 Dev.isLogShowDateTime = true; // whether log the date time
 Dev.isExeWithShowLog = true; // whether execFinalFunc with showing log
