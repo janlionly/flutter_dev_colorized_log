@@ -57,7 +57,11 @@
 ## [1.2.4] - 22 Jan 2025
 
 * Feat: Set default log is false.
-* 
+
 ## [1.2.5] - 25 Feb 2025
 
 * Feat: Adjust dart sdk and format.
+
+## [1.2.6] - 23 Mar 2025
+
+* Feat: Add global static param [isMultConsoleLog] to support multiple console logs.

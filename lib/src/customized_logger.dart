@@ -71,12 +71,12 @@ class DevColorizedLog {
       if (isExe && !Dev.isExeWithShowLog) {
         return;
       }
-      if (isMultConsole != null && isMultConsole == true) {
+      if ((isMultConsole != null && isMultConsole == true) || Dev.isMultConsoleLog) {
         if (isDebugPrint == null || isDebugPrint) {
-          debugPrint('[$finalName]$formattedNow${fileInfo ?? ''}$msg');
+          debugPrint('\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}$msg\x1B[0m');
         } else {
           // ignore: avoid_print
-          print('[$finalName]$formattedNow${fileInfo ?? ''}$msg');
+          print('\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}$msg\x1B[0m');
         }
       } else {
         dev.log(

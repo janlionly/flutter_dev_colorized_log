@@ -143,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isDebugPrint = true;
     Dev.isLogFileLocation = true;
     Dev.defaultColorInt = 0;
+    // Dev.isMultConsoleLog = true;
     Dev.customFinalFunc = (msg) {
       textViewKey.currentState?.appendText(msg);
     };
@@ -155,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Dev.log('==========================Level Log========================',
         name: 'logLev');
-    Dev.log('Colorized text log', fileLocation: 'main.dart:90xx');
+    Dev.log('Colorized text log', fileLocation: 'main.dart:90xx---------');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
     Dev.logWarning('Colorized text Warning');

@@ -27,6 +27,9 @@ class Dev {
   /// whether execFinalFunc with showing log
   static bool isExeWithShowLog = true;
 
+  /// whether log with multiple consoles
+  static bool isMultConsoleLog = false;
+
   static final _logColorMap = {
     DevLevel.logNor: defaultColorInt,
     DevLevel.logInf: 96,
