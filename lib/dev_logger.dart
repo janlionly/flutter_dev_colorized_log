@@ -36,6 +36,8 @@ class Dev {
   /// whether execFinalFunc log with different color
   static bool isExeDiffColor = false;
 
+  static String prefixName = '';
+
   static final _logColorMap = {
     DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
     DevLevel.logInf: 96,

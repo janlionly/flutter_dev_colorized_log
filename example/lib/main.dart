@@ -9,6 +9,7 @@ void main() {
   Dev.isDebugPrint = true;
   Dev.isLogFileLocation = true;
   Dev.isExeDiffColor = false;
+  Dev.prefixName = 'MyApp-';
 
   FlutterError.onError = (FlutterErrorDetails details) {
     Dev.logError('dev_colorized_log:',

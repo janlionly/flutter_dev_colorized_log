@@ -66,7 +66,7 @@ class DevColorizedLog {
     bool? execFinalFunc,
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
-    name = '${Dev.levelEmojis[devLevel]}-$name';
+    name = '${Dev.levelEmojis[devLevel]}:${Dev.prefixName}$name';
     final finalName = isExe
         ? (name.contains('log') ? name.replaceFirst('log', 'exe') : '$name&exe')
         : name;

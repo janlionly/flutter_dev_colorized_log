@@ -15,6 +15,9 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
+/// V 2.0.3
+Dev.prefixName = 'MyApp'; // prefix name
+
 /// V 2.0.2
 Dev.isExeDiffColor = false; // whether execFinalFunc with different color
 
