@@ -1,6 +1,6 @@
 # Dev Colorized Log
 
-[![pub package](https://img.shields.io/pub/v/image_color_builder.svg)](https://github.com/janlionly/flutter_dev_colorized_log)<a href="https://github.com/janlionly/flutter_dev_colorized_log"><img src="https://img.shields.io/github/stars/janlionly/flutter_dev_colorized_log.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
+[![pub package](https://img.shields.io/pub/v/dev_colorized_log.svg)](https://github.com/janlionly/flutter_dev_colorized_log)<a href="https://github.com/janlionly/flutter_dev_colorized_log"><img src="https://img.shields.io/github/stars/janlionly/flutter_dev_colorized_log.svg?style=flat&logo=github&colorB=deeppink&label=stars" alt="Star on Github"></a>
 
 A Flutter package for logging colorized text in developer mode.
 
@@ -14,6 +14,13 @@ Dev.enable = true; // whether log msg
 Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
+
+/// V 2.0.0 the lowest level threshold to execute the function of customFinalFunc
+Dev.exeLevel = DevLevel.logWar;
+Dev.customFinalFunc = (msg, level) {
+  // e.g.: your custom write msg to file
+  writeToFile(msg, level);
+};
 
 
 /// V 1.2.8 colorize multi lines

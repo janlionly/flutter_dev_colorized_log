@@ -74,3 +74,8 @@
 
 * Feat: Add colorize multi lines log and special error format log.
 
+## [2.0.0] - 28 Mar 2025
+
+* Feat: Add the lowest level threshold to execute the function of customFinalFunc.
+
+

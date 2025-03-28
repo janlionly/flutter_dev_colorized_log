@@ -127,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     Dev.log('==========================Click to Log========================');
     Dev.log('Colorized text custom with colorInt: $_counter',
-        colorInt: _counter, execFinalFunc: true);
+        colorInt: _counter, execFinalFunc: true, level: DevLevel.logWar);
   }
 
   void printCustomText() {
@@ -140,12 +140,15 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     Dev.enable = true;
+    Dev.isMultConsoleLog = true;
+
     Dev.isDebugPrint = true;
     Dev.isLogFileLocation = true;
     // Dev.defaultColorInt = 97;
-    // Dev.isMultConsoleLog = true;
-    Dev.customFinalFunc = (msg) {
-      textViewKey.currentState?.appendText(msg);
+
+    Dev.exeLevel = DevLevel.logWar;
+    Dev.customFinalFunc = (msg, level) {
+      textViewKey.currentState?.appendText('${level.name}: $msg');
     };
     Dev.isLogShowDateTime = true;
     Dev.isExeWithShowLog = true;
@@ -167,16 +170,30 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.log('==========================All Color Log========================');
     printCustomText();
 
-    Dev.log('==========================Level Log========================',
+    Dev.log('==========================Log Level Log========================',
         name: 'logLev');
     Dev.log('Colorized text log', fileLocation: 'main.dart:90xx---------');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink', isSlow: true);
-    Dev.log('========================Level Log End ======================',
+    Dev.logBlink('Colorized text blink');
+    Dev.log(
+        '==========================Log Level Log End ======================',
         isLog: true);
+
+    Dev.print(
+        '==========================Print Level Log========================',
+        name: 'logLev');
+    Dev.print('Colorized text log', level: DevLevel.logNor);
+    Dev.print('Colorized text Info', level: DevLevel.logInf);
+    Dev.print('Colorized text Success', level: DevLevel.logSuc);
+    Dev.print('Colorized text Warning', level: DevLevel.logWar);
+    Dev.print('Colorized text Error', level: DevLevel.logErr);
+    Dev.print('Colorized text blink', level: DevLevel.logBlk);
+    Dev.print(
+        '==========================Print Level Log End =====================',
+        name: 'logLev');
 
     String text = 'Hello World!';
     Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true);
@@ -217,12 +234,16 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.exe('!!!!7.Exec Colorized text Success Without printing',
         level: DevLevel.logSuc, isMultConsole: true, isLog: false);
 
+    Dev.exe('==========================Exe Level Log========================',
+        name: 'logLev');
     Dev.exe("Exec Normal");
     Dev.exeInfo("Exec Info");
     Dev.exeSuccess("Exec Success");
     Dev.exeWarning("Exec Warning");
     Dev.exeError("Exec Error");
     Dev.exeBlink("Exec Blink");
+    Dev.exe('==========================Exe Level Log End =====================',
+        name: 'logLev');
   }
 
   void allLevelLog() {
@@ -238,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.logError('Colorized text Error execFinalFunc: true',
         execFinalFunc: true);
     Dev.logBlink('Colorized text blink execFinalFunc: true',
-        isSlow: true, execFinalFunc: true);
+        execFinalFunc: true);
     Dev.log('========================Level Log End ======================',
         isLog: true, execFinalFunc: true);
 
@@ -300,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
                 child: UITextView(
               key: textViewKey,
-              initialText: "Log Infos",
+              initialText: "Logs:",
               textStyle: const TextStyle(fontSize: 16.0, color: Colors.black),
             )),
             const SizedBox(height: 20),

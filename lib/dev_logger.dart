@@ -16,7 +16,7 @@ class Dev {
   static bool? isDebugPrint;
   static bool isLogFileLocation = true;
   static int? defaultColorInt;
-  static Function(String)? customFinalFunc;
+  static Function(String, DevLevel)? customFinalFunc;
 
   /// whether log the date time
   static bool isLogShowDateTime = true;
@@ -30,22 +30,34 @@ class Dev {
   /// whether log with multiple consoles
   static bool isMultConsoleLog = false;
 
+  /// the lowest level threshold to execute the function of customFinalFunc
+  static DevLevel exeLevel = DevLevel.logWar;
+
   static final _logColorMap = {
-    DevLevel.logNor: defaultColorInt,
+    DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
     DevLevel.logInf: 96,
     DevLevel.logSuc: 92,
     DevLevel.logWar: 93,
     DevLevel.logErr: 91,
-    DevLevel.logBlk: 5,
+    DevLevel.logBlk: Dev.isMultConsoleLog ? 95 : 5,
   };
 
   static final _exeColorMap = {
-    DevLevel.logNor: 95,
-    DevLevel.logInf: 106,
-    DevLevel.logSuc: 102,
-    DevLevel.logWar: 103,
-    DevLevel.logErr: 101,
-    DevLevel.logBlk: 6,
+    DevLevel.logNor: 44,
+    DevLevel.logInf: 46,
+    DevLevel.logSuc: 42,
+    DevLevel.logWar: 43,
+    DevLevel.logErr: 41,
+    DevLevel.logBlk: Dev.isMultConsoleLog ? 47 : 6,
+  };
+
+  static final levelEmojis = {
+    DevLevel.logNor: '🔖',
+    DevLevel.logInf: '📬',
+    DevLevel.logSuc: '🎉',
+    DevLevel.logWar: '🚧',
+    DevLevel.logErr: '❌',
+    DevLevel.logBlk: '💣',
   };
 
   /// Default color log
@@ -78,6 +90,7 @@ class Dev {
 
     DevColorizedLog.logCustom(
       msg,
+      devLevel: level,
       enable: Dev.enable,
       colorInt:
           execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci,
@@ -123,6 +136,7 @@ class Dev {
 
     DevColorizedLog.logCustom(
       msg,
+      devLevel: level,
       enable: Dev.enable,
       colorInt:
           execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci,
@@ -148,7 +162,7 @@ class Dev {
       String? fileInfo,
       Object? error,
       StackTrace? stackTrace}) {
-    int ci = colorInt ?? (_exeColorMap[level] ?? 95);
+    int ci = colorInt ?? (_exeColorMap[level] ?? 44);
     final String theFileInfo = Dev.isLogFileLocation
         ? (fileInfo ??
             '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
@@ -165,6 +179,7 @@ class Dev {
 
     DevColorizedLog.logCustom(
       msg,
+      devLevel: level,
       enable: Dev.enable,
       colorInt: ci,
       isLog: isLog,
@@ -184,6 +199,7 @@ class Dev {
     bool? isLog,
     bool? isMultConsole,
     bool? isDebug,
+    int? colorInt,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -193,7 +209,7 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: _exeColorMap[DevLevel.logInf],
+        colorInt: colorInt ?? _exeColorMap[DevLevel.logInf],
         level: DevLevel.logInf);
   }
 
@@ -202,6 +218,7 @@ class Dev {
     bool? isLog,
     bool? isMultConsole,
     bool? isDebug,
+    int? colorInt,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -211,7 +228,7 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: _exeColorMap[DevLevel.logSuc],
+        colorInt: colorInt ?? _exeColorMap[DevLevel.logSuc],
         level: DevLevel.logSuc);
   }
 
@@ -220,6 +237,7 @@ class Dev {
     bool? isLog,
     bool? isMultConsole,
     bool? isDebug,
+    int? colorInt,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -229,7 +247,7 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: _exeColorMap[DevLevel.logWar],
+        colorInt: colorInt ?? _exeColorMap[DevLevel.logWar],
         level: DevLevel.logWar);
   }
 
@@ -261,6 +279,7 @@ class Dev {
     bool? isLog,
     bool? isMultConsole,
     bool? isDebug,
+    int? colorInt,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -270,20 +289,22 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: _exeColorMap[DevLevel.logBlk],
+        colorInt: colorInt ?? _exeColorMap[DevLevel.logBlk],
         level: DevLevel.logBlk);
   }
 
   /// Blink orange text
-  static void logBlink(String msg,
-      {bool? isLog, bool isSlow = true, bool? execFinalFunc}) {
+  static void logBlink(String msg, {bool? isLog, bool? execFinalFunc}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
     DevColorizedLog.logCustom(
       msg,
+      devLevel: DevLevel.logBlk,
       enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc ? 6 : (isSlow ? 5 : 6),
+      colorInt: execFinalFunc != null && execFinalFunc
+          ? _exeColorMap[DevLevel.logBlk]!
+          : _logColorMap[DevLevel.logBlk]!,
       isLog: isLog,
       fileInfo: fileInfo,
       name: 'logBlk',
@@ -298,6 +319,7 @@ class Dev {
         : '';
     DevColorizedLog.logCustom(
       msg,
+      devLevel: DevLevel.logInf,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
           ? _exeColorMap[DevLevel.logInf]!
@@ -316,6 +338,7 @@ class Dev {
         : '';
     DevColorizedLog.logCustom(
       msg,
+      devLevel: DevLevel.logSuc,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
           ? _exeColorMap[DevLevel.logSuc]!
@@ -334,6 +357,7 @@ class Dev {
         : '';
     DevColorizedLog.logCustom(
       msg,
+      devLevel: DevLevel.logWar,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
           ? _exeColorMap[DevLevel.logWar]!
@@ -357,6 +381,7 @@ class Dev {
         : '';
     DevColorizedLog.logCustom(
       msg,
+      devLevel: DevLevel.logErr,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
           ? _exeColorMap[DevLevel.logErr]!

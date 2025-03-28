@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 class DevColorizedLog {
   static void logCustom(
     String msg, {
+    required DevLevel devLevel,
     bool enable = true,
     int colorInt = 0,
     bool? isLog,
@@ -28,6 +29,7 @@ class DevColorizedLog {
   }) {
     _custom(
       msg,
+      devLevel: devLevel,
       enable: enable,
       colorInt: colorInt,
       isLog: isLog,
@@ -47,6 +49,7 @@ class DevColorizedLog {
 
   static void _custom(
     String msg, {
+    required DevLevel devLevel,
     bool enable = true,
     int colorInt = 0,
     bool? isLog,
@@ -63,6 +66,7 @@ class DevColorizedLog {
     bool? execFinalFunc,
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
+    name = '${Dev.levelEmojis[devLevel]}-$name';
     final finalName = isExe ? '$name&Exe' : name;
     DateTime now = DateTime.now();
     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
@@ -110,8 +114,11 @@ class DevColorizedLog {
     }
 
     if (isExe) {
-      Dev.customFinalFunc?.call(
-          '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$msg');
+      if (devLevel.index >= Dev.exeLevel.index) {
+        Dev.customFinalFunc?.call(
+            '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$msg',
+            devLevel);
+      }
     }
   }
 
@@ -131,7 +138,7 @@ class DevColorizedLog {
     final stackTrace = details.stack?.toString() ?? 'No stack trace available';
 
     return '''
-  🔴 [ERROR] UniqueID: $errorId
+  ❌ [ERROR] UniqueID: $errorId
   🕒 Timestamp: $timestamp
   📛 ErrorType: $errorType
   💥 ErrorMessage: $errorMessage
