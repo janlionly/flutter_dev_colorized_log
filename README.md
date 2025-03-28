@@ -15,13 +15,26 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
-// V1.1.6 custom function to support your process of log
-Dev.customFinalFunc = (msg) {
-	// e.g.: your custom write msg to file  
-  writeToFile(msg);
-};
-// V1.2.6
-Dev.isMultConsoleLog = true; // whether log on multi platform consoles like Xcode, VS Code, Terminal, etc.
+
+/// V 1.2.8 colorize multi lines
+Dev.log('===================== Colorize multi lines log =====================');
+const multiLines = '''
+      🔴 [ERROR] UniqueID: 1
+      🕒 Timestamp: 2
+      📛 ErrorType: 3
+      💥 ErrorMessage: 4
+      📚 StackTrace: 5
+    ''';
+const multiLines2 = 'Error1\nError2\nError3';
+Dev.logError(multiLines);
+Dev.logError(multiLines2);
+/// V 1.2.8 special error format log
+Dev.print(e, error: e, level: DevLevel.logErr);
+Dev.logError('$e', error: e);
+Dev.exeError('$e', error: e, colorInt: 91);
+
+// V1.2.6 whether log on multi platform consoles like Xcode, VS Code, Terminal, etc.
+Dev.isMultConsoleLog = true;
 
 // V1.2.2
 Dev.isLogShowDateTime = true; // whether log the date time
@@ -52,6 +65,12 @@ Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
 
 // then every level log func contains execFinalFunc param:
 Dev.log('Colorized text log to your process of log', execFinalFunc: true);
+
+// V1.1.6 custom function to support your process of log
+Dev.customFinalFunc = (msg) {
+	// e.g.: your custom write msg to file  
+  writeToFile(msg);
+};
 
 /* Log usage: */
 Dev.log('Colorized text log'); // default yellow text

@@ -15,7 +15,7 @@ class Dev {
   static bool enable = false;
   static bool? isDebugPrint;
   static bool isLogFileLocation = true;
-  static int defaultColorInt = 0;
+  static int? defaultColorInt;
   static Function(String)? customFinalFunc;
 
   /// whether log the date time
@@ -65,7 +65,9 @@ class Dev {
     StackTrace? stackTrace,
     bool? execFinalFunc,
   }) {
-    int ci = colorInt ?? (_logColorMap[level] ?? defaultColorInt);
+    int ci = colorInt ??
+        (_logColorMap[level] ??
+            (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
     final String fileInfo = Dev.isLogFileLocation
         ? (fileLocation != null
             ? '($fileLocation): '
@@ -97,15 +99,21 @@ class Dev {
   static void print(Object? object,
       {String? name,
       DevLevel level = DevLevel.logNor,
+      int? colorInt,
       bool? isLog,
       String? fileLocation,
       bool? isDebug,
-      bool? execFinalFunc}) {
+      bool? execFinalFunc,
+      Object? error,
+      StackTrace? stackTrace}) {
     final String fileInfo = Dev.isLogFileLocation
         ? (fileLocation != null
             ? '($fileLocation): '
             : '(${StackTrace.current.toString().split('\n')[1].split('/').last}: ')
         : '';
+    int ci = colorInt ??
+        (_logColorMap[level] ??
+            (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
     String msg = "$object";
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
     var theName = name ?? level.toString().split('.').last;
@@ -116,11 +124,15 @@ class Dev {
     DevColorizedLog.logCustom(
       msg,
       enable: Dev.enable,
+      colorInt:
+          execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci,
       isLog: isLog,
       isMultConsole: true,
       isDebugPrint: isDbgPrint,
       fileInfo: fileInfo,
       name: theName,
+      error: error,
+      stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
     );
   }
@@ -133,7 +145,9 @@ class Dev {
       bool? isMultConsole,
       bool? isDebug,
       int? colorInt,
-      String? fileInfo}) {
+      String? fileInfo,
+      Object? error,
+      StackTrace? stackTrace}) {
     int ci = colorInt ?? (_exeColorMap[level] ?? 95);
     final String theFileInfo = Dev.isLogFileLocation
         ? (fileInfo ??
@@ -160,6 +174,8 @@ class Dev {
       name: theName,
       level: levelMap[level] ?? 0,
       execFinalFunc: true,
+      error: error,
+      stackTrace: stackTrace,
     );
   }
 
@@ -222,6 +238,9 @@ class Dev {
     bool? isLog,
     bool? isMultConsole,
     bool? isDebug,
+    int? colorInt,
+    Object? error,
+    StackTrace? stackTrace,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -231,8 +250,10 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: _exeColorMap[DevLevel.logErr],
-        level: DevLevel.logErr);
+        colorInt: colorInt ?? _exeColorMap[DevLevel.logErr],
+        level: DevLevel.logErr,
+        error: error,
+        stackTrace: stackTrace);
   }
 
   static void exeBlink(
@@ -326,7 +347,11 @@ class Dev {
   }
 
   /// Red text
-  static void logError(String msg, {bool? isLog, bool? execFinalFunc}) {
+  static void logError(String msg,
+      {bool? isLog,
+      bool? execFinalFunc,
+      Object? error,
+      StackTrace? stackTrace}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -341,6 +366,8 @@ class Dev {
       level: 2000,
       name: 'logErr',
       execFinalFunc: execFinalFunc,
+      error: error,
+      stackTrace: stackTrace,
     );
   }
 }

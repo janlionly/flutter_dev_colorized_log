@@ -142,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.enable = true;
     Dev.isDebugPrint = true;
     Dev.isLogFileLocation = true;
-    Dev.defaultColorInt = 0;
+    // Dev.defaultColorInt = 97;
     // Dev.isMultConsoleLog = true;
     Dev.customFinalFunc = (msg) {
       textViewKey.currentState?.appendText(msg);
@@ -150,6 +150,19 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isLogShowDateTime = true;
     Dev.isExeWithShowLog = true;
     Dev.isExeWithDateTime = false;
+
+    /// V 1.2.8 colorize multi lines
+    Dev.log('===================== Multi lines log =====================');
+    const multiLines = '''
+      🔴 [ERROR] UniqueID: 1
+      🕒 Timestamp: 2
+      📛 ErrorType: 3
+      💥 ErrorMessage: 4
+      📚 StackTrace: 5
+    ''';
+    const multiLines2 = 'Error1\nError2\nError3';
+    Dev.logError(multiLines);
+    Dev.logError(multiLines2);
 
     Dev.log('==========================All Color Log========================');
     printCustomText();
@@ -171,17 +184,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Dev.print('Dev text pirnt with the given level', level: DevLevel.logErr);
 
+    Future<void>.delayed(const Duration(seconds: 1), () => allLevelLog());
+    Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
+    Future<void>.delayed(const Duration(seconds: 3), () => catchErrorLog());
+  }
+
+  void catchErrorLog() {
     try {
       final List a = [];
       final x = a[9] + 3;
       Dev.print(x);
     } catch (e) {
-      Dev.print(e);
+      /// V 1.2.8 special error formatter
+      Dev.print(e, error: e, level: DevLevel.logErr);
+      Dev.logError('$e', error: e);
+      Dev.exeError('$e', error: e, colorInt: 91);
     }
-
-    Future<void>.delayed(const Duration(seconds: 1), () => allLevelLog());
-
-    Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
   }
 
   void exeLog() {

@@ -67,6 +67,10 @@ class DevColorizedLog {
     DateTime now = DateTime.now();
     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
 
+    if (error != null) {
+      msg = '$msg\n${_errorMessage(error, stackTrace, dateTime: formattedNow)}';
+    }
+
     void logging() {
       if (isExe && !Dev.isExeWithShowLog) {
         return;
@@ -75,22 +79,24 @@ class DevColorizedLog {
           Dev.isMultConsoleLog) {
         if (isDebugPrint == null || isDebugPrint) {
           debugPrint(
-              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}$msg\x1B[0m');
+              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}${_colorizeLines(msg, colorInt)}\x1B[0m');
         } else {
           // ignore: avoid_print
           print(
-              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}$msg\x1B[0m');
+              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}${_colorizeLines(msg, colorInt)}\x1B[0m');
         }
       } else {
         dev.log(
-          '\x1B[${colorInt}m$formattedNow${fileInfo ?? ''}$msg\x1B[0m',
+          '\x1B[${colorInt}m$formattedNow${fileInfo ?? ''}${_colorizeLines(msg, colorInt)}\x1B[0m',
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
           name: '\x1B[${colorInt}m$finalName\x1B[0m',
           zone: zone,
-          error: error,
-          stackTrace: stackTrace,
+
+          /// !!!: handled by _errorMessage above.
+          error: null, // error,
+          stackTrace: null, //stackTrace,
         );
       }
     }
@@ -107,5 +113,37 @@ class DevColorizedLog {
       Dev.customFinalFunc?.call(
           '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$msg');
     }
+  }
+
+  static String _errorMessage(Object error, StackTrace? stackTrace,
+      {String? dateTime}) {
+    final details = FlutterErrorDetails(exception: error, stack: stackTrace);
+    return _errorDetails(details, dateTime: dateTime);
+  }
+
+  static String _errorDetails(FlutterErrorDetails details, {String? dateTime}) {
+    final timestamp = dateTime != null && dateTime.isNotEmpty
+        ? dateTime
+        : DateTime.now().toIso8601String();
+    final errorId = UniqueKey().toString();
+    final errorType = details.exception.runtimeType;
+    final errorMessage = details.exceptionAsString();
+    final stackTrace = details.stack?.toString() ?? 'No stack trace available';
+
+    return '''
+  🔴 [ERROR] UniqueID: $errorId
+  🕒 Timestamp: $timestamp
+  📛 ErrorType: $errorType
+  💥 ErrorMessage: $errorMessage
+  📚 StackTrace: $stackTrace
+  ''';
+  }
+
+  static String _colorizeLines(String msg, int colorCode) {
+    const lineBreak = '\n';
+    if (msg.contains(lineBreak)) {
+      return '$lineBreak${msg.split(lineBreak).map((line) => '\x1B[${colorCode}m$line\x1B[0m').join(lineBreak)}';
+    }
+    return msg;
   }
 }

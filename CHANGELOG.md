@@ -69,3 +69,8 @@
 ## [1.2.7] - 24 Mar 2025
 
 * Docs: Update README.md and dart formatter.
+
+## [1.2.8] - 28 Mar 2025
+
+* Feat: Add colorize multi lines log and special error format log.
+
