@@ -82,5 +82,6 @@
 
 * Style: Adjust log format.
 
+## [2.0.2] - 28 Mar 2025
 
-
+* Feat: Add static param [isExeDiffColor] decides whether execFinalFunc log with different color and changed prefix name.

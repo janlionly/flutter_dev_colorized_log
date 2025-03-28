@@ -1,6 +1,6 @@
 name: dev_colorized_log
 description: A Flutter package for logging colorized text in developer mode.
-version: 2.0.1
+version: 2.0.2
 homepage: https://github.com/janlionly/flutter_dev_colorized_log
 
 environment:

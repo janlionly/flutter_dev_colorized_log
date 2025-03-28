@@ -67,7 +67,9 @@ class DevColorizedLog {
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
     name = '${Dev.levelEmojis[devLevel]}-$name';
-    final finalName = isExe ? '$name&Exe' : name;
+    final finalName = isExe
+        ? (name.contains('log') ? name.replaceFirst('log', 'exe') : '$name&exe')
+        : name;
     DateTime now = DateTime.now();
     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
 

@@ -8,6 +8,7 @@ void main() {
   Dev.isMultConsoleLog = true;
   Dev.isDebugPrint = true;
   Dev.isLogFileLocation = true;
+  Dev.isExeDiffColor = false;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     Dev.logError('dev_colorized_log:',

@@ -33,6 +33,9 @@ class Dev {
   /// the lowest level threshold to execute the function of customFinalFunc
   static DevLevel exeLevel = DevLevel.logWar;
 
+  /// whether execFinalFunc log with different color
+  static bool isExeDiffColor = false;
+
   static final _logColorMap = {
     DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
     DevLevel.logInf: 96,
@@ -42,14 +45,16 @@ class Dev {
     DevLevel.logBlk: Dev.isMultConsoleLog ? 95 : 5,
   };
 
-  static final _exeColorMap = {
-    DevLevel.logNor: 44,
-    DevLevel.logInf: 46,
-    DevLevel.logSuc: 42,
-    DevLevel.logWar: 43,
-    DevLevel.logErr: 41,
-    DevLevel.logBlk: Dev.isMultConsoleLog ? 47 : 6,
-  };
+  static final _exeColorMap = isExeDiffColor
+      ? {
+          DevLevel.logNor: 44,
+          DevLevel.logInf: 46,
+          DevLevel.logSuc: 42,
+          DevLevel.logWar: 43,
+          DevLevel.logErr: 41,
+          DevLevel.logBlk: Dev.isMultConsoleLog ? 47 : 6,
+        }
+      : _logColorMap;
 
   static final levelEmojis = {
     DevLevel.logNor: '🔖',
