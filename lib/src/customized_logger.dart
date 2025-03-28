@@ -142,7 +142,7 @@ class DevColorizedLog {
   🕒 Timestamp: $timestamp
   📛 ErrorType: $errorType
   💥 ErrorMessage: $errorMessage
-  📚 StackTrace: $stackTrace
+  📚 StackTrace: \n$stackTrace
   ''';
   }
 

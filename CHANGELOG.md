@@ -78,4 +78,9 @@
 
 * Feat: Add the lowest level threshold to execute the function of customFinalFunc.
 
+## [2.0.1] - 28 Mar 2025
+
+* Style: Adjust log format.
+
+
 

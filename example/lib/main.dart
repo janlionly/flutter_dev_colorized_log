@@ -1,7 +1,22 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:dev_colorized_log/dev_colorized_log.dart';
 
 void main() {
+  Dev.enable = true;
+  Dev.isMultConsoleLog = true;
+  Dev.isDebugPrint = true;
+  Dev.isLogFileLocation = true;
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    Dev.logError('dev_colorized_log:',
+        error: details.exception, stackTrace: details.stack);
+  };
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    Dev.logError('dev_colorized_log:', error: error, stackTrace: stack);
+    return true;
+  };
   runApp(const MyApp());
 }
 
@@ -139,11 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Dev.enable = true;
-    Dev.isMultConsoleLog = true;
 
-    Dev.isDebugPrint = true;
-    Dev.isLogFileLocation = true;
     // Dev.defaultColorInt = 97;
 
     Dev.exeLevel = DevLevel.logWar;
@@ -217,6 +228,10 @@ class _MyHomePageState extends State<MyHomePage> {
       Dev.logError('$e', error: e);
       Dev.exeError('$e', error: e, colorInt: 91);
     }
+
+    final List a = [];
+    final x = a[9] + 3;
+    Dev.print(x);
   }
 
   void exeLog() {
