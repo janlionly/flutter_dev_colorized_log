@@ -9,6 +9,6 @@ void main() {
     Dev.logSuccess('Colorized text Success');
     Dev.logWarning('Colorized text Warning');
     Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink', isSlow: true, isLog: true);
+    Dev.logBlink('Colorized text blink', isLog: true);
   });
 }
