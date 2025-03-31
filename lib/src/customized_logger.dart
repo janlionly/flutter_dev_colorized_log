@@ -9,6 +9,15 @@ import 'package:dev_colorized_log/dev_logger.dart';
 import 'package:flutter/foundation.dart';
 
 class DevColorizedLog {
+  static final levelEmojis = {
+    DevLevel.logNor: '🔖',
+    DevLevel.logInf: '📬',
+    DevLevel.logSuc: '🎉',
+    DevLevel.logWar: '🚧',
+    DevLevel.logErr: '❌',
+    DevLevel.logBlk: '💣',
+  };
+
   static void logCustom(
     String msg, {
     required DevLevel devLevel,
@@ -66,7 +75,7 @@ class DevColorizedLog {
     bool? execFinalFunc,
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
-    name = '${Dev.levelEmojis[devLevel]}:${Dev.prefixName}$name';
+    name = '${levelEmojis[devLevel]}:${Dev.prefixName}$name';
     final finalName = isExe
         ? (name.contains('log') ? name.replaceFirst('log', 'exe') : '$name&exe')
         : name;

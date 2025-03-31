@@ -58,15 +58,6 @@ class Dev {
         }
       : _logColorMap;
 
-  static final levelEmojis = {
-    DevLevel.logNor: '🔖',
-    DevLevel.logInf: '📬',
-    DevLevel.logSuc: '🎉',
-    DevLevel.logWar: '🚧',
-    DevLevel.logErr: '❌',
-    DevLevel.logBlk: '💣',
-  };
-
   /// Default color log
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
