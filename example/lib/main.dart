@@ -168,33 +168,36 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isExeWithDateTime = false;
 
     /// V 2.0.4 newline replacement for better search visibility
-    Dev.isReplaceNewline = true;  // default is false
-    Dev.newlineReplacement = ' | ';  // default is ' | '
-    
-    Dev.log('===================== Newline Replacement Demo =====================');
+    Dev.isReplaceNewline = true; // default is false
+    Dev.newlineReplacement = ' | '; // default is ' | '
+
+    Dev.log(
+        '===================== Newline Replacement Demo =====================');
     const multiLineExample = '''Error occurred at:
     - File: user.dart line 123
     - Function: validateUser()
     - Reason: Invalid email format''';
-    
+
     Dev.logError('Multi-line error with replacement:\n$multiLineExample');
-    
+
     // Demo with messy whitespace
     const messyExample = '''  Error:  
 	Multiple    spaces   and	tabs
    End with spaces  ''';
-    
+
     Dev.logWarning('Messy whitespace cleaned up:\n$messyExample');
-    
+
     // Disable newline replacement to show difference
     Dev.isReplaceNewline = false;
-    Dev.logWarning('Multi-line warning without replacement:\n$multiLineExample');
-    
+    Dev.logWarning(
+        'Multi-line warning without replacement:\n$multiLineExample');
+
     // Re-enable with custom replacement character
     Dev.isReplaceNewline = true;
     Dev.newlineReplacement = ' >> ';
-    Dev.logWarning('Multi-line warning with custom replacement:\n$multiLineExample');
-    
+    Dev.logWarning(
+        'Multi-line warning with custom replacement:\n$multiLineExample');
+
     // Reset to default
     Dev.newlineReplacement = ' | ';
 

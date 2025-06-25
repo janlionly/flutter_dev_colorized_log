@@ -90,10 +90,10 @@ class DevColorizedLog {
       if (isExe && !Dev.isExeWithShowLog) {
         return;
       }
-      
+
       // Process newlines for better search visibility
       final processedMsg = _processNewlines(msg);
-      
+
       if ((isMultConsole != null && isMultConsole == true) ||
           Dev.isMultConsoleLog) {
         if (isDebugPrint == null || isDebugPrint) {
@@ -112,6 +112,7 @@ class DevColorizedLog {
           level: level,
           name: '\x1B[${colorInt}m$finalName\x1B[0m',
           zone: zone,
+
           /// !!!: handled by _errorMessage above.
           error: null, // error,
           stackTrace: null, //stackTrace,
@@ -175,9 +176,10 @@ class DevColorizedLog {
       // Replace newlines and clean up extra whitespace characters
       return msg
           .replaceAll('\n', Dev.newlineReplacement)
-          .replaceAll('\t', ' ')  // Replace tabs with spaces
-          .replaceAll(RegExp(r' +'), ' ')  // Replace multiple spaces with single space
-          .trim();  // Remove leading and trailing whitespace
+          .replaceAll('\t', ' ') // Replace tabs with spaces
+          .replaceAll(
+              RegExp(r' +'), ' ') // Replace multiple spaces with single space
+          .trim(); // Remove leading and trailing whitespace
     }
     return msg;
   }

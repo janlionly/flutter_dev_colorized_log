@@ -45,13 +45,13 @@ class Dev {
   static String newlineReplacement = ' | ';
 
   static Map<DevLevel, int> get _logColorMap => {
-    DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
-    DevLevel.logInf: 96,
-    DevLevel.logSuc: 92,
-    DevLevel.logWar: 93,
-    DevLevel.logErr: 91,
-    DevLevel.logBlk: isMultConsoleLog ? 95 : 5,
-  };
+        DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
+        DevLevel.logInf: 96,
+        DevLevel.logSuc: 92,
+        DevLevel.logWar: 93,
+        DevLevel.logErr: 91,
+        DevLevel.logBlk: isMultConsoleLog ? 95 : 5,
+      };
 
   static Map<DevLevel, int> get _exeColorMap => isExeDiffColor
       ? {
