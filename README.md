@@ -15,6 +15,10 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
+/// V 2.0.4 newline replacement for better search visibility in console
+Dev.isReplaceNewline = true; // whether replace newline characters (default true)
+Dev.newlineReplacement = ' | '; // replacement string for newlines (default ' | ')
+
 /// V 2.0.3
 Dev.prefixName = 'MyApp'; // prefix name
 
@@ -98,6 +102,33 @@ Dev.print('Dev text print', isDebug: true); // default log only on debug mode
 
 // Others:
 Dev.log('Colorized text log other customs', fileLocation: 'main.dart:90xx', colorInt: 96);
+
+// Example: Multi-line log for better search visibility
+const errorDetails = '''Error occurred:
+- File: user.dart:123
+- Function: validateEmail()
+- Reason: Invalid format''';
+
+// With replacement enabled (default):
+Dev.logError(errorDetails); 
+// Output: Error occurred: | - File: user.dart:123 | - Function: validateEmail() | - Reason: Invalid format
+
+// Example with messy whitespace:
+const messyLog = '''  Error:  
+	Multiple    spaces   and	tabs
+   End with spaces  ''';
+
+// With replacement enabled - cleans up extra whitespace:
+Dev.logError(messyLog);
+// Output: Error: | Multiple spaces and tabs | End with spaces
+
+// Without replacement:
+Dev.isReplaceNewline = false;
+Dev.logError(errorDetails);
+// Output: Error occurred:
+//         - File: user.dart:123
+//         - Function: validateEmail()
+//         - Reason: Invalid format
 ```
 
 ## Author

@@ -89,3 +89,8 @@
 ## [2.0.3] - 29 Mar 2025
 
 * Feat: Add static param [prefixName] to support the prefix name.
+
+## [2.0.4] – 26 Jun 2025
+
+* Fixed: Color maps now dynamically reflect changes to defaultColorInt, isMultConsoleLog, and isExeDiffColor by using getters instead of static finals.
+* Feat: Added optional newline replacement in logs (isReplaceNewline, default true) for improved console search readability.

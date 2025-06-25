@@ -28,7 +28,7 @@ class Dev {
   static bool isExeWithShowLog = true;
 
   /// whether log with multiple consoles
-  static bool isMultConsoleLog = false;
+  static bool isMultConsoleLog = true;
 
   /// the lowest level threshold to execute the function of customFinalFunc
   static DevLevel exeLevel = DevLevel.logWar;
@@ -38,23 +38,29 @@ class Dev {
 
   static String prefixName = '';
 
-  static final _logColorMap = {
+  /// whether replace newline characters and clean up whitespace for better search visibility in console
+  static bool isReplaceNewline = false;
+
+  /// the character to replace newline characters with
+  static String newlineReplacement = ' | ';
+
+  static Map<DevLevel, int> get _logColorMap => {
     DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
     DevLevel.logInf: 96,
     DevLevel.logSuc: 92,
     DevLevel.logWar: 93,
     DevLevel.logErr: 91,
-    DevLevel.logBlk: Dev.isMultConsoleLog ? 95 : 5,
+    DevLevel.logBlk: isMultConsoleLog ? 95 : 5,
   };
 
-  static final _exeColorMap = isExeDiffColor
+  static Map<DevLevel, int> get _exeColorMap => isExeDiffColor
       ? {
           DevLevel.logNor: 44,
           DevLevel.logInf: 46,
           DevLevel.logSuc: 42,
           DevLevel.logWar: 43,
           DevLevel.logErr: 41,
-          DevLevel.logBlk: Dev.isMultConsoleLog ? 47 : 6,
+          DevLevel.logBlk: isMultConsoleLog ? 47 : 6,
         }
       : _logColorMap;
 
