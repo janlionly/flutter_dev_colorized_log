@@ -16,7 +16,7 @@ Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
 /// V 2.0.4 newline replacement for better search visibility in console
-Dev.isReplaceNewline = true; // whether replace newline characters (default true)
+Dev.isReplaceNewline = true; // whether replace newline characters (default false)
 Dev.newlineReplacement = ' | '; // replacement string for newlines (default ' | ')
 
 /// V 2.0.3

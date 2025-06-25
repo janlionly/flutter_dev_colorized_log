@@ -94,3 +94,8 @@
 
 * Fixed: Color maps now dynamically reflect changes to defaultColorInt, isMultConsoleLog, and isExeDiffColor by using getters instead of static finals.
 * Feat: Added optional newline replacement in logs (isReplaceNewline, default true) for improved console search readability.
+
+## [2.0.5] – 26 Jun 2025
+
+* Docs: Update README.md and dart formatter.
+
