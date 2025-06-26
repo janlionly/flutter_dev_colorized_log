@@ -84,10 +84,42 @@ Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
 Dev.log('Colorized text log to your process of log', execFinalFunc: true);
 
 // V1.1.6 custom function to support your process of log
-Dev.customFinalFunc = (msg) {
-	// e.g.: your custom write msg to file  
-  writeToFile(msg);
+// Deprecated: Use exeFinalFunc instead (customFinalFunc will be removed in future versions)
+// Dev.customFinalFunc = (msg, level) {
+//   writeToFile(msg, level);  
+// };
+
+## Migration Guide
+
+### From customFinalFunc to exeFinalFunc (v2.0.6+)
+
+The `customFinalFunc` has been renamed to `exeFinalFunc` for better naming consistency. The old name is deprecated but still works for backward compatibility.
+
+**Old way (deprecated):**
+```dart
+Dev.customFinalFunc = (msg, level) {
+  writeToFile(msg, level);
 };
+```
+
+**New way (recommended):**
+```dart
+Dev.exeFinalFunc = (msg, level) {
+  writeToFile(msg, level);
+};
+```
+
+**Priority:** If both `exeFinalFunc` and `customFinalFunc` are set, `exeFinalFunc` takes priority.
+
+**Infinite Recursion Prevention:** The library automatically prevents infinite recursion when `exeFinalFunc` or `customFinalFunc` calls Dev logging methods (like `Dev.exeError`, `Dev.exe`, etc.) internally.
+
+```dart
+// Safe: This won't cause infinite recursion
+Dev.exeFinalFunc = (msg, level) {
+  writeToFile(msg, level);
+  Dev.exeError('Also log this error'); // Won't trigger exeFinalFunc again
+};
+```
 
 /* Log usage: */
 Dev.log('Colorized text log'); // default yellow text

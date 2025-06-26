@@ -18,6 +18,9 @@ class DevColorizedLog {
     DevLevel.logBlk: '💣',
   };
 
+  /// Internal flag to prevent infinite recursion
+  static bool _isExecutingFinalFunc = false;
+
   static void logCustom(
     String msg, {
     required DevLevel devLevel,
@@ -131,9 +134,21 @@ class DevColorizedLog {
     if (isExe) {
       if (devLevel.index >= Dev.exeLevel.index) {
         final callbackMsg = _processNewlines(msg);
-        Dev.customFinalFunc?.call(
-            '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$callbackMsg',
-            devLevel);
+        // Use exeFinalFunc first, fall back to customFinalFunc for backward compatibility
+        // ignore: deprecated_member_use_from_same_package
+        final finalFunc = Dev.exeFinalFunc ?? Dev.customFinalFunc;
+
+        // Prevent infinite recursion when finalFunc calls Dev.exe* methods
+        if (finalFunc != null && !_isExecutingFinalFunc) {
+          _isExecutingFinalFunc = true;
+          try {
+            finalFunc.call(
+                '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$callbackMsg',
+                devLevel);
+          } finally {
+            _isExecutingFinalFunc = false;
+          }
+        }
       }
     }
   }

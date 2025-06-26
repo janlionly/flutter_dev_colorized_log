@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Dev.defaultColorInt = 97;
 
     Dev.exeLevel = DevLevel.logWar;
-    Dev.customFinalFunc = (msg, level) {
+    Dev.exeFinalFunc = (msg, level) {
       textViewKey.currentState?.appendText('${level.name}: $msg');
     };
     Dev.isLogShowDateTime = true;

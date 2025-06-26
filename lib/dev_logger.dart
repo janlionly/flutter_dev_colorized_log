@@ -16,7 +16,16 @@ class Dev {
   static bool? isDebugPrint;
   static bool isLogFileLocation = true;
   static int? defaultColorInt;
-  static Function(String, DevLevel)? customFinalFunc;
+
+  /// the custom final function to execute when log level meets the threshold
+  static Function(String, DevLevel)? exeFinalFunc;
+
+  /// @deprecated Use [exeFinalFunc] instead. This will be removed in future versions.
+  @Deprecated('Use exeFinalFunc instead')
+  static Function(String, DevLevel)? get customFinalFunc => _customFinalFunc;
+  static set customFinalFunc(Function(String, DevLevel)? value) =>
+      _customFinalFunc = value;
+  static Function(String, DevLevel)? _customFinalFunc;
 
   /// whether log the date time
   static bool isLogShowDateTime = true;

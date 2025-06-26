@@ -61,4 +61,68 @@ void main() {
     Dev.log(multiLineMsg, isLog: true);
     Dev.log(messyWhitespaceMsg, isLog: true);
   });
+
+  test('test exeFinalFunc and backward compatibility', () {
+    // Test new exeFinalFunc
+    Dev.enable = true;
+    Dev.exeLevel = DevLevel.logNor;
+
+    String? capturedMsg;
+    DevLevel? capturedLevel;
+
+    Dev.exeFinalFunc = (msg, level) {
+      capturedMsg = msg;
+      capturedLevel = level;
+    };
+
+    Dev.exe('Test exeFinalFunc', level: DevLevel.logInf);
+    expect(capturedMsg?.contains('Test exeFinalFunc'), true);
+    expect(capturedLevel, DevLevel.logInf);
+
+    // Test backward compatibility with deprecated customFinalFunc
+    String? deprecatedCapturedMsg;
+    DevLevel? deprecatedCapturedLevel;
+
+    Dev.exeFinalFunc = null; // Clear new function
+    // ignore: deprecated_member_use
+    Dev.customFinalFunc = (msg, level) {
+      deprecatedCapturedMsg = msg;
+      deprecatedCapturedLevel = level;
+    };
+
+    Dev.exe('Test customFinalFunc backward compatibility',
+        level: DevLevel.logWar);
+    expect(
+        deprecatedCapturedMsg
+            ?.contains('Test customFinalFunc backward compatibility'),
+        true);
+    expect(deprecatedCapturedLevel, DevLevel.logWar);
+
+    // Test infinite recursion prevention
+    int callCount = 0;
+
+    Dev.exeFinalFunc = (msg, level) {
+      callCount++;
+      // This would cause infinite recursion without protection
+      Dev.exeError('Recursive call attempt exeFinalFunc $callCount');
+      Dev.exeError('Recursive call attempt exeFinalFunc2 $callCount');
+      Dev.exeError('Recursive call attempt exeFinalFunc3 $callCount');
+    };
+
+    Dev.customFinalFunc = (msg, level) {
+      callCount++;
+      // This would cause infinite recursion without protection
+      Dev.exeError('Recursive call attempt customFinalFunc $callCount');
+    };
+
+    Dev.exe('Test recursion prevention', level: DevLevel.logErr);
+
+    // The callback should only be called once due to recursion prevention
+    expect(callCount, 1);
+
+    // Clean up
+    Dev.exeFinalFunc = null;
+    // ignore: deprecated_member_use
+    Dev.customFinalFunc = null;
+  });
 }

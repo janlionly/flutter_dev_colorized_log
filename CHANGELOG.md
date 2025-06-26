@@ -99,3 +99,9 @@
 
 * Docs: Update README.md and dart formatter.
 
+## [2.0.6] - 26 Jun 2025
+
+* Breaking: Renamed [customFinalFunc] to [exeFinalFunc] for better naming consistency. The old [customFinalFunc] is now deprecated but still works for backward compatibility. It will be removed in future versions. Please migrate to [exeFinalFunc].
+* Feat: Added priority logic - [exeFinalFunc] takes priority over [customFinalFunc] when both are set.
+* Safety: Added infinite recursion prevention - prevents stack overflow when [exeFinalFunc] or [customFinalFunc] calls Dev logging methods internally.
+
