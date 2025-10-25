@@ -38,7 +38,16 @@ class DevColorizedLog {
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
+    String? printOnceIfContains,
   }) {
+    // Check if message contains keyword and was already logged once
+    if (printOnceIfContains != null && msg.contains(printOnceIfContains)) {
+      if (Dev.hasCachedKey(printOnceIfContains)) {
+        return; // Skip this log - already printed a message containing this keyword
+      }
+      Dev.addCachedKey(printOnceIfContains);
+    }
+
     _custom(
       msg,
       devLevel: devLevel,

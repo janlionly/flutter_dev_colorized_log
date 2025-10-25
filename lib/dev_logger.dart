@@ -17,6 +17,25 @@ class Dev {
   static bool isLogFileLocation = true;
   static int? defaultColorInt;
 
+  /// Cache for one-time log keywords to prevent duplicate logging
+  /// Stores keywords that have been logged once already
+  static final Set<String> _cachedKeys = {};
+
+  /// Check if a keyword has been cached (logged once)
+  static bool hasCachedKey(String key) {
+    return _cachedKeys.contains(key);
+  }
+
+  /// Add a keyword to cache
+  static void addCachedKey(String key) {
+    _cachedKeys.add(key);
+  }
+
+  /// Clear all cached keywords
+  static void clearCachedKeys() {
+    _cachedKeys.clear();
+  }
+
   /// the custom final function to execute when log level meets the threshold
   static Function(String, DevLevel)? exeFinalFunc;
 
@@ -76,6 +95,7 @@ class Dev {
   /// Default color log
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
+  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
   static void log(
     String msg, {
     DevLevel level = DevLevel.logNor,
@@ -89,6 +109,7 @@ class Dev {
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
+    String? printOnceIfContains,
   }) {
     int ci = colorInt ??
         (_logColorMap[level] ??
@@ -117,11 +138,13 @@ class Dev {
       error: error,
       stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
   /// log supportting on multiple consoles
   /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
+  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
   static void print(Object? object,
       {String? name,
       DevLevel level = DevLevel.logNor,
@@ -131,7 +154,8 @@ class Dev {
       bool? isDebug,
       bool? execFinalFunc,
       Object? error,
-      StackTrace? stackTrace}) {
+      StackTrace? stackTrace,
+      String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? (fileLocation != null
             ? '($fileLocation): '
@@ -161,10 +185,12 @@ class Dev {
       error: error,
       stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
   /// Execute custom final func with purple text or blue text with mult console
+  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
   static void exe(String msg,
       {String? name,
       DevLevel level = DevLevel.logNor,
@@ -174,7 +200,8 @@ class Dev {
       int? colorInt,
       String? fileInfo,
       Object? error,
-      StackTrace? stackTrace}) {
+      StackTrace? stackTrace,
+      String? printOnceIfContains}) {
     int ci = colorInt ?? (_exeColorMap[level] ?? 44);
     final String theFileInfo = Dev.isLogFileLocation
         ? (fileInfo ??
@@ -204,6 +231,7 @@ class Dev {
       execFinalFunc: true,
       error: error,
       stackTrace: stackTrace,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
@@ -213,6 +241,7 @@ class Dev {
     bool? isMultConsole,
     bool? isDebug,
     int? colorInt,
+    String? printOnceIfContains,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -223,7 +252,8 @@ class Dev {
         isDebug: isDebug,
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logInf],
-        level: DevLevel.logInf);
+        level: DevLevel.logInf,
+        printOnceIfContains: printOnceIfContains);
   }
 
   static void exeSuccess(
@@ -232,6 +262,7 @@ class Dev {
     bool? isMultConsole,
     bool? isDebug,
     int? colorInt,
+    String? printOnceIfContains,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -242,7 +273,8 @@ class Dev {
         isDebug: isDebug,
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logSuc],
-        level: DevLevel.logSuc);
+        level: DevLevel.logSuc,
+        printOnceIfContains: printOnceIfContains);
   }
 
   static void exeWarning(
@@ -251,6 +283,7 @@ class Dev {
     bool? isMultConsole,
     bool? isDebug,
     int? colorInt,
+    String? printOnceIfContains,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -261,7 +294,8 @@ class Dev {
         isDebug: isDebug,
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logWar],
-        level: DevLevel.logWar);
+        level: DevLevel.logWar,
+        printOnceIfContains: printOnceIfContains);
   }
 
   static void exeError(
@@ -272,6 +306,7 @@ class Dev {
     int? colorInt,
     Object? error,
     StackTrace? stackTrace,
+    String? printOnceIfContains,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -284,7 +319,8 @@ class Dev {
         colorInt: colorInt ?? _exeColorMap[DevLevel.logErr],
         level: DevLevel.logErr,
         error: error,
-        stackTrace: stackTrace);
+        stackTrace: stackTrace,
+        printOnceIfContains: printOnceIfContains);
   }
 
   static void exeBlink(
@@ -293,6 +329,7 @@ class Dev {
     bool? isMultConsole,
     bool? isDebug,
     int? colorInt,
+    String? printOnceIfContains,
   }) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
@@ -303,11 +340,13 @@ class Dev {
         isDebug: isDebug,
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logBlk],
-        level: DevLevel.logBlk);
+        level: DevLevel.logBlk,
+        printOnceIfContains: printOnceIfContains);
   }
 
   /// Blink orange text
-  static void logBlink(String msg, {bool? isLog, bool? execFinalFunc}) {
+  static void logBlink(String msg,
+      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -322,11 +361,13 @@ class Dev {
       fileInfo: fileInfo,
       name: 'logBlk',
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
   /// Blue text
-  static void logInfo(String msg, {bool? isLog, bool? execFinalFunc}) {
+  static void logInfo(String msg,
+      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -341,11 +382,13 @@ class Dev {
       fileInfo: fileInfo,
       name: 'logInf',
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
   /// Green text
-  static void logSuccess(String msg, {bool? isLog, bool? execFinalFunc}) {
+  static void logSuccess(String msg,
+      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -360,11 +403,13 @@ class Dev {
       fileInfo: fileInfo,
       name: 'logSuc',
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
   /// Yellow text
-  static void logWarning(String msg, {bool? isLog, bool? execFinalFunc}) {
+  static void logWarning(String msg,
+      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -380,6 +425,7 @@ class Dev {
       level: 1000,
       name: 'logWar',
       execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 
@@ -388,7 +434,8 @@ class Dev {
       {bool? isLog,
       bool? execFinalFunc,
       Object? error,
-      StackTrace? stackTrace}) {
+      StackTrace? stackTrace,
+      String? printOnceIfContains}) {
     final String fileInfo = Dev.isLogFileLocation
         ? '(${StackTrace.current.toString().split('\n')[1].split('/').last}: '
         : '';
@@ -406,6 +453,7 @@ class Dev {
       execFinalFunc: execFinalFunc,
       error: error,
       stackTrace: stackTrace,
+      printOnceIfContains: printOnceIfContains,
     );
   }
 }

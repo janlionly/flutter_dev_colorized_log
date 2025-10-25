@@ -15,6 +15,12 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
+/// V 2.0.7 printOnceIfContains for one-time logging when message contains keyword
+/// Use printOnceIfContains parameter to ensure only first log containing the keyword is printed
+Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
+Dev.log('Retry: USER-001 timeout again', printOnceIfContains: 'USER-001'); // Skipped! (message contains 'USER-001' which was already logged)
+Dev.clearCachedKeys(); // Clear all cached keywords if needed
+
 /// V 2.0.4 newline replacement for better search visibility in console
 Dev.isReplaceNewline = true; // whether replace newline characters (default false)
 Dev.newlineReplacement = ' | '; // replacement string for newlines (default ' | ')
@@ -161,6 +167,38 @@ Dev.logError(errorDetails);
 //         - File: user.dart:123
 //         - Function: validateEmail()
 //         - Reason: Invalid format
+
+// Example: printOnceIfContains for one-time logging (v2.0.7+)
+// Useful for preventing duplicate error logs in loops or repeated function calls
+for (var i = 0; i < 100; i++) {
+  // Only logs the FIRST time a message contains 'API-ERROR-500'
+  Dev.logWarning('Request failed: API-ERROR-500 timeout', printOnceIfContains: 'API-ERROR-500');
+  // Subsequent logs containing 'API-ERROR-500' are skipped
+}
+
+// Different keywords are independent
+Dev.log('User login failed: ERROR-001', printOnceIfContains: 'ERROR-001');  // ✓ Logged
+Dev.log('Database error: ERROR-002', printOnceIfContains: 'ERROR-002'); // ✓ Logged
+Dev.log('Retry login: ERROR-001 again', printOnceIfContains: 'ERROR-001'); // ✗ Skipped (contains 'ERROR-001')
+Dev.log('DB connection lost: ERROR-002', printOnceIfContains: 'ERROR-002'); // ✗ Skipped (contains 'ERROR-002')
+
+// Message doesn't contain keyword - always logs
+Dev.log('Normal log without error code', printOnceIfContains: 'ERROR-999'); // ✓ Logged (doesn't contain 'ERROR-999')
+
+// Clear cache to allow re-logging
+Dev.clearCachedKeys();
+Dev.log('After clear: ERROR-001 can log again', printOnceIfContains: 'ERROR-001'); // ✓ Logged (cache was cleared)
+
+// Practical use case: Log user actions only once per session
+Dev.logInfo('User user-123 logged in', printOnceIfContains: 'user-123');
+Dev.logInfo('User user-123 clicked button', printOnceIfContains: 'user-123'); // ✗ Skipped
+Dev.logInfo('User user-456 logged in', printOnceIfContains: 'user-456'); // ✓ Logged (different user)
+
+// Works with all log methods
+Dev.logInfo('Info: token-abc expired', printOnceIfContains: 'token-abc');
+Dev.logError('Error: connection-lost', printOnceIfContains: 'connection-lost');
+Dev.exe('Execute: task-001 started', printOnceIfContains: 'task-001');
+Dev.print('Print: session-xyz created', printOnceIfContains: 'session-xyz');
 ```
 
 ## Author
