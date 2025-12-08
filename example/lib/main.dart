@@ -33,10 +33,10 @@ class UITextView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _UITextViewState createState() => _UITextViewState();
+  UITextViewState createState() => UITextViewState();
 }
 
-class _UITextViewState extends State<UITextView> {
+class UITextViewState extends State<UITextView> {
   late String _text;
   final ScrollController _scrollController = ScrollController();
 
@@ -131,7 +131,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  final GlobalKey<_UITextViewState> textViewKey = GlobalKey<_UITextViewState>();
+  final GlobalKey<UITextViewState> textViewKey = GlobalKey<UITextViewState>();
 
   void _incrementCounter() {
     setState(() {
@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter = (_counter + 1) % 108;
     });
     Dev.log('==========================Click to Log========================');
-    Dev.log('Colorized text custom with colorInt: $_counter',
+    Dev.log('Colorized text custom with colorInt-->: $_counter',
         colorInt: _counter, execFinalFunc: true, level: DevLevel.logWar);
   }
 

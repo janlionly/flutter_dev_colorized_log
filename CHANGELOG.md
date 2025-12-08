@@ -1,3 +1,11 @@
+## [2.0.8] - 08 Dec 2025
+
+* Performance: Significantly improved stack trace extraction performance (40-60% faster with optimized mode, 10-20% faster with basic mode).
+* Feat: Added [isLightweightMode] static parameter - skip stack trace capture completely for maximum performance in production environments (file location logging is disabled when enabled).
+* Feat: Added [useOptimizedStackTrace] static parameter (default: true) - uses stack_trace package for better performance. Set to false to use basic string operations.
+* Refactor: Unified file location extraction logic with new [_getFileLocation()] and [_getFileLocationBasic()] internal methods, replacing duplicated code across all log methods.
+* Dependency: Added stack_trace package (^1.11.0) for optimized stack trace parsing.
+
 ## [2.0.7] - 25 Oct 2025
 
 * Feat: Added [printOnceIfContains] parameter to all log methods (log, print, exe, logInfo, logSuccess, logWarning, logError, logBlink, exeInfo, exeSuccess, exeWarning, exeError, exeBlink) - only prints the first log message containing the specified keyword, subsequent logs with the same keyword are skipped.

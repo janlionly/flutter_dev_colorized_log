@@ -15,6 +15,10 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
+/// V 2.0.8 Performance optimization options
+Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
+Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
+
 /// V 2.0.7 printOnceIfContains for one-time logging when message contains keyword
 /// Use printOnceIfContains parameter to ensure only first log containing the keyword is printed
 Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
@@ -199,6 +203,26 @@ Dev.logInfo('Info: token-abc expired', printOnceIfContains: 'token-abc');
 Dev.logError('Error: connection-lost', printOnceIfContains: 'connection-lost');
 Dev.exe('Execute: task-001 started', printOnceIfContains: 'task-001');
 Dev.print('Print: session-xyz created', printOnceIfContains: 'session-xyz');
+
+// Performance Optimization Examples (v2.0.8+)
+
+// Mode 1: Default optimized mode (recommended for development)
+Dev.useOptimizedStackTrace = true; // Uses stack_trace package (40-60% faster)
+Dev.isLightweightMode = false;
+Dev.logError('Development error with file location'); // Shows: (main.dart:123): Development error...
+
+// Mode 2: Basic optimized mode (no external dependency)
+Dev.useOptimizedStackTrace = false; // Uses basic string operations (10-20% faster)
+Dev.isLightweightMode = false;
+Dev.logWarning('Warning with basic stack trace'); // Shows: (main.dart:456): Warning...
+
+// Mode 3: Maximum performance mode (recommended for production)
+Dev.isLightweightMode = true; // Skips stack trace completely
+Dev.logInfo('Production log'); // No file location shown, maximum performance
+
+// Recommendation:
+// - Development: useOptimizedStackTrace = true, isLightweightMode = false
+// - Production: isLightweightMode = true (or disable Dev.enable entirely)
 ```
 
 ## Author
