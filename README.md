@@ -19,6 +19,13 @@ Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
 Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
 
+/// V 2.0.9 debounceMs + debounceKey for throttling rapid log calls
+/// Use debounceMs parameter to prevent log spam from repeated calls
+/// Use debounceKey when log message contains dynamic content (timestamps, counters, etc.)
+Dev.logWarning('Button clicked', debounceMs: 2000); // Only logs once every 2 seconds
+Dev.logInfo('API call at ${DateTime.now()}', debounceMs: 1000, debounceKey: 'api_call'); // Logs with dynamic content
+Dev.clearDebounceTimestamps(); // Clear all debounce states if needed
+
 /// V 2.0.7 printOnceIfContains for one-time logging when message contains keyword
 /// Use printOnceIfContains parameter to ensure only first log containing the keyword is printed
 Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
@@ -203,6 +210,101 @@ Dev.logInfo('Info: token-abc expired', printOnceIfContains: 'token-abc');
 Dev.logError('Error: connection-lost', printOnceIfContains: 'connection-lost');
 Dev.exe('Execute: task-001 started', printOnceIfContains: 'task-001');
 Dev.print('Print: session-xyz created', printOnceIfContains: 'session-xyz');
+
+// Debounce Examples (v2.0.9+)
+// Prevent log spam from rapid repeated calls
+
+// Example 1: Debounce button clicks
+void onButtonPressed() {
+  // Only logs once every 2 seconds, even if clicked 100 times
+  Dev.logInfo('Button clicked!', debounceMs: 2000);
+}
+
+// Example 1b: Debounce with dynamic message content
+void onButtonPressedWithTimestamp() {
+  // Use debounceKey when message contains dynamic content (timestamp, counter, etc.)
+  Dev.logInfo('Button clicked at ${DateTime.now()}', 
+      debounceMs: 2000, 
+      debounceKey: 'button_click');
+  // Without debounceKey, each click would have a unique message and wouldn't be debounced
+}
+
+// Example 2: Debounce scroll events with dynamic values
+void onScroll(double offset) {
+  // Use debounceKey because offset value changes every time
+  Dev.log('Scroll offset: $offset px', 
+      debounceMs: 500, 
+      debounceKey: 'scroll_event');
+  // All scroll events share the same debounceKey, so only logs once per 500ms
+}
+
+// Example 3: Debounce API requests with attempt counter
+int attemptCount = 0;
+void fetchData() {
+  attemptCount++;
+  // Use debounceKey because message contains dynamic attemptCount
+  Dev.exeWarning('API request attempt $attemptCount', 
+      debounceMs: 1000, 
+      debounceKey: 'api_fetch');
+  // Only logs once per second, even though attemptCount changes
+}
+
+// Example 4: Different messages have independent debounce
+Dev.logWarning('Message A', debounceMs: 1000); // ✓ Logged immediately
+Dev.logWarning('Message B', debounceMs: 1000); // ✓ Logged (different message)
+Dev.logWarning('Message A', debounceMs: 1000); // ✗ Skipped (within 1s of first 'Message A')
+
+// Example 5: Combine with execFinalFunc
+Dev.exeFinalFunc = (msg, level) {
+  writeToFile(msg, level);
+};
+// Prevents overwhelming the log file with repeated errors
+Dev.exeError('Network timeout', debounceMs: 3000); // Only written once every 3 seconds
+
+// Example 6: Clear debounce state
+// ❌ Wrong - message changes each iteration, so all 10 logs will print
+// for (int i = 0; i < 10; i++) {
+//   Dev.logInfo('Loop iteration $i', debounceMs: 500);
+// }
+
+// ✓ Correct - use debounceKey for dynamic message content
+for (int i = 0; i < 10; i++) {
+  Dev.logInfo('Loop iteration $i', 
+      debounceMs: 500, 
+      debounceKey: 'loop_log'); // Only first logs
+}
+Dev.clearDebounceTimestamps(); // Reset all debounce states
+Dev.logInfo('Loop iteration 0', 
+    debounceMs: 500, 
+    debounceKey: 'loop_log'); // ✓ Now logs again
+
+// Important: When to use debounceKey
+// ✓ Use debounceKey when message contains dynamic content:
+//   - Timestamps: 'Event at ${DateTime.now()}'
+//   - Counters: 'Attempt $count'
+//   - User input: 'Search query: $userInput'
+//   - Positions: 'Scroll offset: $offset'
+// ✗ No need for debounceKey when message is static:
+//   - 'Button clicked' - message is always the same
+//   - 'API failed' - no dynamic content
+
+// Practical use cases:
+// - Button click handlers (prevent double-click spam)
+// - Scroll event listeners (reduce noise during continuous scrolling)
+// - API retry logic (avoid flooding logs with repeated failures)
+// - Form validation (throttle real-time validation logs)
+// - Animation frame callbacks (limit logs during animations)
+// - Mouse move/hover events with coordinates (use debounceKey: 'mouse_move')
+// - Network status changes with timestamps (use debounceKey: 'network_status')
+
+// Works with all log methods
+Dev.log('Normal log', debounceMs: 1000);
+Dev.logInfo('Info log', debounceMs: 1500);
+Dev.logSuccess('Success log', debounceMs: 2000);
+Dev.logWarning('Warning log', debounceMs: 2500);
+Dev.logError('Error log', debounceMs: 3000);
+Dev.exe('Execute log', debounceMs: 1000);
+Dev.print('Print log', debounceMs: 1000);
 
 // Performance Optimization Examples (v2.0.8+)
 

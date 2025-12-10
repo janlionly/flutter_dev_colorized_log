@@ -131,6 +131,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  int _debounceClickCount = 0;
   final GlobalKey<UITextViewState> textViewKey = GlobalKey<UITextViewState>();
 
   void _incrementCounter() {
@@ -145,6 +146,19 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.log('==========================Click to Log========================');
     Dev.log('Colorized text custom with colorInt-->: $_counter',
         colorInt: _counter, execFinalFunc: true, level: DevLevel.logWar);
+  }
+
+  void _testDebounce() {
+    setState(() {
+      _debounceClickCount++;
+    });
+    // This log will be debounced - rapid clicks within 2 seconds will be ignored
+    // Using debounceKey because message contains dynamic _debounceClickCount
+    Dev.logWarning(
+        'Debounce Test Button Clicked (Count: $_debounceClickCount) at ${DateTime.now()} - Try clicking rapidly!',
+        debounceMs: 10000,
+        debounceKey: 'test_button_click',
+        execFinalFunc: true);
   }
 
   void printCustomText() {
@@ -251,6 +265,67 @@ class _MyHomePageState extends State<MyHomePage> {
     Future<void>.delayed(const Duration(seconds: 1), () => allLevelLog());
     Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
     Future<void>.delayed(const Duration(seconds: 3), () => catchErrorLog());
+    Future<void>.delayed(const Duration(seconds: 4), () => debounceDemo());
+  }
+
+  void debounceDemo() {
+    Dev.log('==========================Debounce Demo========================');
+
+    // Demo 1: Rapid button clicks - only first log should execute
+    Dev.logInfo('Button clicked (1/5) - This should log',
+        debounceMs: 1000, execFinalFunc: true);
+    Dev.logInfo('Button clicked (2/5) - SKIPPED due to debounce',
+        debounceMs: 1000, execFinalFunc: true);
+    Dev.logInfo('Button clicked (3/5) - SKIPPED due to debounce',
+        debounceMs: 1000, execFinalFunc: true);
+
+    // Demo 1b: Using debounceKey with dynamic content
+    for (int i = 1; i <= 3; i++) {
+      Dev.logInfo('Click with timestamp ${DateTime.now()} (attempt $i)',
+          debounceMs: 1000, debounceKey: 'dynamic_click', execFinalFunc: true);
+    }
+
+    // Demo 2: After debounce period, log should work again
+    Future<void>.delayed(const Duration(milliseconds: 1100), () {
+      Dev.logInfo('Button clicked after 1.1s - This should log again',
+          debounceMs: 1000, execFinalFunc: true);
+    });
+
+    // Demo 3: Different messages have independent debounce
+    Dev.logWarning('Warning A - This should log',
+        debounceMs: 800, execFinalFunc: true);
+    Dev.logWarning('Warning B - This should also log (different message)',
+        debounceMs: 800, execFinalFunc: true);
+    Dev.logWarning('Warning A - SKIPPED (same as first)',
+        debounceMs: 800, execFinalFunc: true);
+
+    // Demo 4: API request simulation with debounce (using debounceKey)
+    for (int i = 0; i < 5; i++) {
+      Future<void>.delayed(Duration(milliseconds: i * 100), () {
+        Dev.exe('API Request /users - Call ${i + 1} at ${DateTime.now()}',
+            level: DevLevel.logSuc, debounceMs: 500, debounceKey: 'api_users');
+      });
+    }
+
+    // Demo 5: Error logging with debounce to prevent spam
+    Future<void>.delayed(const Duration(milliseconds: 1500), () {
+      for (int i = 0; i < 3; i++) {
+        Dev.exeError('Network timeout error occurred',
+            debounceMs: 2000, isMultConsole: true);
+      }
+    });
+
+    // Demo 6: Scroll position simulation with debounceKey
+    Future<void>.delayed(const Duration(milliseconds: 2000), () {
+      for (double offset = 0; offset < 500; offset += 50) {
+        Dev.logWarning('Scroll position: ${offset}px',
+            debounceMs: 300,
+            debounceKey: 'scroll_position',
+            execFinalFunc: true);
+      }
+    });
+
+    Dev.log('==========================Debounce Demo End====================');
   }
 
   void catchErrorLog() {
@@ -382,6 +457,20 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _testDebounce,
+              icon: const Icon(Icons.timer),
+              label: Text('Test Debounce (Clicks: $_debounceClickCount)'),
+              style: ElevatedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+            const Text(
+              'Try clicking rapidly! Logs debounced for 2 seconds.',
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 20),
           ],

@@ -100,6 +100,38 @@ class Dev {
     _cachedKeys.clear();
   }
 
+  /// Cache for debounce functionality
+  /// Stores the last execution timestamp for each debounced log
+  static final Map<String, DateTime> _debounceTimestamps = {};
+
+  /// Check if a log should be debounced
+  /// Returns true if the log should be skipped (still in debounce period)
+  static bool shouldDebounce(String key, int debounceMs) {
+    if (debounceMs <= 0) return false;
+
+    final now = DateTime.now();
+    final lastTime = _debounceTimestamps[key];
+
+    if (lastTime == null) {
+      _debounceTimestamps[key] = now;
+      return false;
+    }
+
+    final difference = now.difference(lastTime).inMilliseconds;
+    if (difference < debounceMs) {
+      return true; // Still in debounce period, skip this log
+    }
+
+    // Update timestamp and allow log
+    _debounceTimestamps[key] = now;
+    return false;
+  }
+
+  /// Clear all debounce timestamps
+  static void clearDebounceTimestamps() {
+    _debounceTimestamps.clear();
+  }
+
   /// the custom final function to execute when log level meets the threshold
   static Function(String, DevLevel)? exeFinalFunc;
 
@@ -160,6 +192,8 @@ class Dev {
   /// @param[colorInt]: 0 to 107
   /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
   /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void log(
     String msg, {
     DevLevel level = DevLevel.logNor,
@@ -174,6 +208,8 @@ class Dev {
     StackTrace? stackTrace,
     bool? execFinalFunc,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     int ci = colorInt ??
         (_logColorMap[level] ??
@@ -200,12 +236,16 @@ class Dev {
       stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
   /// log supportting on multiple consoles
   /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
   /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void print(Object? object,
       {String? name,
       DevLevel level = DevLevel.logNor,
@@ -216,7 +256,9 @@ class Dev {
       bool? execFinalFunc,
       Object? error,
       StackTrace? stackTrace,
-      String? printOnceIfContains}) {
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo =
         fileLocation != null ? '($fileLocation): ' : _getFileLocation();
     int ci = colorInt ??
@@ -244,11 +286,15 @@ class Dev {
       stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
   /// Execute custom final func with purple text or blue text with mult console
   /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exe(String msg,
       {String? name,
       DevLevel level = DevLevel.logNor,
@@ -259,7 +305,9 @@ class Dev {
       String? fileInfo,
       Object? error,
       StackTrace? stackTrace,
-      String? printOnceIfContains}) {
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     int ci = colorInt ?? (_exeColorMap[level] ?? 44);
     final String theFileInfo = fileInfo ?? _getFileLocation();
     bool isMult = isMultConsole != null && isMultConsole;
@@ -287,6 +335,8 @@ class Dev {
       error: error,
       stackTrace: stackTrace,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
@@ -297,6 +347,8 @@ class Dev {
     bool? isDebug,
     int? colorInt,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -306,7 +358,9 @@ class Dev {
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logInf],
         level: DevLevel.logInf,
-        printOnceIfContains: printOnceIfContains);
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
   }
 
   static void exeSuccess(
@@ -316,6 +370,8 @@ class Dev {
     bool? isDebug,
     int? colorInt,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -325,7 +381,9 @@ class Dev {
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logSuc],
         level: DevLevel.logSuc,
-        printOnceIfContains: printOnceIfContains);
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
   }
 
   static void exeWarning(
@@ -335,6 +393,8 @@ class Dev {
     bool? isDebug,
     int? colorInt,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -344,7 +404,9 @@ class Dev {
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logWar],
         level: DevLevel.logWar,
-        printOnceIfContains: printOnceIfContains);
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
   }
 
   static void exeError(
@@ -356,6 +418,8 @@ class Dev {
     Object? error,
     StackTrace? stackTrace,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -367,7 +431,9 @@ class Dev {
         level: DevLevel.logErr,
         error: error,
         stackTrace: stackTrace,
-        printOnceIfContains: printOnceIfContains);
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
   }
 
   static void exeBlink(
@@ -377,6 +443,8 @@ class Dev {
     bool? isDebug,
     int? colorInt,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -386,12 +454,18 @@ class Dev {
         fileInfo: fileInfo,
         colorInt: colorInt ?? _exeColorMap[DevLevel.logBlk],
         level: DevLevel.logBlk,
-        printOnceIfContains: printOnceIfContains);
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
   }
 
   /// Blink orange text
   static void logBlink(String msg,
-      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
@@ -405,12 +479,18 @@ class Dev {
       name: 'logBlk',
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
   /// Blue text
   static void logInfo(String msg,
-      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
@@ -424,12 +504,18 @@ class Dev {
       name: 'logInf',
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
   /// Green text
   static void logSuccess(String msg,
-      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
@@ -443,12 +529,18 @@ class Dev {
       name: 'logSuc',
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
   /// Yellow text
   static void logWarning(String msg,
-      {bool? isLog, bool? execFinalFunc, String? printOnceIfContains}) {
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
@@ -463,6 +555,8 @@ class Dev {
       name: 'logWar',
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 
@@ -472,7 +566,9 @@ class Dev {
       bool? execFinalFunc,
       Object? error,
       StackTrace? stackTrace,
-      String? printOnceIfContains}) {
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
@@ -489,6 +585,8 @@ class Dev {
       error: error,
       stackTrace: stackTrace,
       printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
     );
   }
 }

@@ -1,3 +1,13 @@
+## [2.0.9] - 10 Dec 2025
+
+* Feat: Added [debounceMs] parameter to all log methods (log, print, exe, logInfo, logSuccess, logWarning, logError, logBlink, exeInfo, exeSuccess, exeWarning, exeError, exeBlink) - throttles logs within the specified time interval in milliseconds.
+* Feat: Added [debounceKey] parameter to all log methods - allows custom key for debounce identification. When provided, uses debounceKey instead of message content for debouncing, enabling debounce for logs with dynamic content (e.g., timestamps, counters).
+* Feat: Added [Dev.shouldDebounce()] method to check if a log should be debounced based on the key and time interval.
+* Feat: Added [Dev.clearDebounceTimestamps()] method to clear all debounce timestamps and reset the debounce state.
+* Use case: Prevents log spam from rapid repeated calls (e.g., button clicks, scroll events, API requests) by discarding logs within the debounce interval.
+* Example: `Dev.logWarning('Button clicked ${DateTime.now()}', debounceMs: 2000, debounceKey: 'button_click')` will only log once every 2 seconds despite dynamic timestamps.
+* Fallback: When debounceKey is not provided, uses msg|devLevel|name as the debounce key for backward compatibility.
+
 ## [2.0.8] - 08 Dec 2025
 
 * Performance: Significantly improved stack trace extraction performance (40-60% faster with optimized mode, 10-20% faster with basic mode).

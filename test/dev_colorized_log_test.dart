@@ -209,4 +209,266 @@ void main() {
     Dev.exeFinalFunc = null;
     Dev.clearCachedKeys();
   });
+
+  test('test debounceMs functionality - throttle logs within time interval',
+      () async {
+    // Test debounce functionality - logs within the specified interval should be discarded
+    Dev.enable = true;
+    Dev.clearDebounceTimestamps(); // Clear any previous debounce state
+
+    int logCallCount = 0;
+
+    Dev.exeFinalFunc = (msg, level) {
+      logCallCount++;
+    };
+
+    Dev.exeLevel = DevLevel.logNor;
+
+    // Test 1: Basic debounce - rapid calls within 500ms should be throttled
+    Dev.log('Debounce test 1',
+        isLog: true, debounceMs: 500, execFinalFunc: true);
+    await Future.delayed(const Duration(milliseconds: 100));
+    Dev.log('Debounce test 1',
+        isLog: true, debounceMs: 500, execFinalFunc: true); // Should be skipped
+    await Future.delayed(const Duration(milliseconds: 100));
+    Dev.log('Debounce test 1',
+        isLog: true, debounceMs: 500, execFinalFunc: true); // Should be skipped
+
+    // Only the first call should execute
+    expect(logCallCount, 1);
+
+    // Wait for debounce period to expire
+    await Future.delayed(const Duration(milliseconds: 400));
+    Dev.log('Debounce test 1',
+        isLog: true,
+        debounceMs: 500,
+        execFinalFunc: true); // Should execute after interval
+    expect(logCallCount, 2);
+
+    // Test 2: Different messages should have independent debounce
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.log('Message A', isLog: true, debounceMs: 300, execFinalFunc: true);
+    Dev.log('Message B', isLog: true, debounceMs: 300, execFinalFunc: true);
+    Dev.log('Message A',
+        isLog: true, debounceMs: 300, execFinalFunc: true); // Should be skipped
+    Dev.log('Message B',
+        isLog: true, debounceMs: 300, execFinalFunc: true); // Should be skipped
+
+    // Both unique messages should execute once
+    expect(logCallCount, 2);
+
+    // Test 3: Different log levels should have independent debounce
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.logInfo('Same message',
+        isLog: true, debounceMs: 300, execFinalFunc: true);
+    Dev.logWarning('Same message',
+        isLog: true, debounceMs: 300, execFinalFunc: true);
+    Dev.logError('Same message',
+        isLog: true, debounceMs: 300, execFinalFunc: true);
+
+    // All different levels should execute
+    expect(logCallCount, 3);
+
+    // Test 4: Zero debounceMs should not throttle
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.log('No debounce', isLog: true, debounceMs: 0, execFinalFunc: true);
+    Dev.log('No debounce', isLog: true, debounceMs: 0, execFinalFunc: true);
+    Dev.log('No debounce', isLog: true, debounceMs: 0, execFinalFunc: true);
+
+    // All calls should execute
+    expect(logCallCount, 3);
+
+    // Test 5: Test with exe methods
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.exe('Exe debounce test', debounceMs: 400);
+    await Future.delayed(const Duration(milliseconds: 100));
+    Dev.exe('Exe debounce test', debounceMs: 400); // Should be skipped
+    expect(logCallCount, 1);
+
+    await Future.delayed(const Duration(milliseconds: 350));
+    Dev.exe('Exe debounce test', debounceMs: 400); // Should execute
+    expect(logCallCount, 2);
+
+    // Test 6: Test with print method
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.print('Print debounce test',
+        isLog: true, debounceMs: 300, execFinalFunc: true);
+    Dev.print('Print debounce test',
+        isLog: true, debounceMs: 300, execFinalFunc: true); // Should be skipped
+    expect(logCallCount, 1);
+
+    await Future.delayed(const Duration(milliseconds: 350));
+    Dev.print('Print debounce test',
+        isLog: true, debounceMs: 300, execFinalFunc: true); // Should execute
+    expect(logCallCount, 2);
+
+    // Test 7: Test specific log methods
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.logSuccess('Success msg',
+        isLog: true, debounceMs: 200, execFinalFunc: true);
+    Dev.logSuccess('Success msg',
+        isLog: true, debounceMs: 200, execFinalFunc: true); // Skipped
+    expect(logCallCount, 1);
+
+    Dev.exeInfo('Info exe', debounceMs: 200);
+    Dev.exeInfo('Info exe', debounceMs: 200); // Skipped
+    expect(logCallCount, 2);
+
+    Dev.exeWarning('Warning exe', debounceMs: 200);
+    Dev.exeError('Error exe', debounceMs: 200);
+    expect(logCallCount, 4);
+
+    // Clean up
+    Dev.exeFinalFunc = null;
+    Dev.clearDebounceTimestamps();
+  });
+
+  test('test debounceKey functionality - use custom key for dynamic messages',
+      () async {
+    // Test that debounceKey allows debouncing messages with dynamic content
+    Dev.enable = true;
+    Dev.clearDebounceTimestamps();
+
+    int logCallCount = 0;
+
+    Dev.exeFinalFunc = (msg, level) {
+      logCallCount++;
+    };
+
+    Dev.exeLevel = DevLevel.logNor;
+
+    // Test 1: Messages with dynamic content but same debounceKey should be debounced
+    Dev.log('Button clicked at ${DateTime.now()}',
+        isLog: true,
+        debounceMs: 500,
+        debounceKey: 'button_click',
+        execFinalFunc: true);
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    Dev.log('Button clicked at ${DateTime.now()}',
+        isLog: true,
+        debounceMs: 500,
+        debounceKey: 'button_click',
+        execFinalFunc: true); // Should be skipped - same debounceKey
+
+    // Only first should execute
+    expect(logCallCount, 1);
+
+    // Test 2: After debounce period, should log again
+    await Future.delayed(const Duration(milliseconds: 450));
+
+    Dev.log('Button clicked at ${DateTime.now()}',
+        isLog: true,
+        debounceMs: 500,
+        debounceKey: 'button_click',
+        execFinalFunc: true); // Should execute - debounce period expired
+
+    expect(logCallCount, 2);
+
+    // Test 3: Different debounceKey should not interfere
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.logWarning('Event A at ${DateTime.now()}',
+        debounceMs: 300, debounceKey: 'event_a', execFinalFunc: true);
+
+    Dev.logWarning('Event B at ${DateTime.now()}',
+        debounceMs: 300, debounceKey: 'event_b', execFinalFunc: true);
+
+    Dev.logWarning('Event A at ${DateTime.now()}',
+        debounceMs: 300,
+        debounceKey: 'event_a',
+        execFinalFunc: true); // Skipped - same key as first
+
+    Dev.logWarning('Event B at ${DateTime.now()}',
+        debounceMs: 300,
+        debounceKey: 'event_b',
+        execFinalFunc: true); // Skipped - same key as second
+
+    // Both unique keys should execute once
+    expect(logCallCount, 2);
+
+    // Test 4: debounceKey with counter in message
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    for (int i = 0; i < 5; i++) {
+      Dev.exeInfo('API request attempt $i',
+          debounceMs: 400, debounceKey: 'api_request');
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    // Only first should execute (all have same debounceKey)
+    expect(logCallCount, 1);
+
+    // Test 5: Mixing debounceKey with regular debounce
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    // With debounceKey
+    Dev.log('Dynamic message 1',
+        debounceMs: 300, debounceKey: 'custom_key', execFinalFunc: true);
+
+    Dev.log('Dynamic message 2',
+        debounceMs: 300,
+        debounceKey: 'custom_key',
+        execFinalFunc: true); // Skipped - same debounceKey
+
+    // Without debounceKey (uses msg as part of key)
+    Dev.log('Static message', debounceMs: 300, execFinalFunc: true);
+
+    Dev.log('Static message',
+        debounceMs: 300, execFinalFunc: true); // Skipped - same msg
+
+    // Should have 2 calls (one for custom_key, one for Static message)
+    expect(logCallCount, 2);
+
+    // Test 6: Real-world scenario - scroll position logging
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    // Simulate rapid scroll events (5 events within 100ms)
+    for (double offset = 0; offset < 500; offset += 100) {
+      Dev.logInfo('Scroll position: $offset px',
+          debounceMs: 300, debounceKey: 'scroll_event', execFinalFunc: true);
+      await Future.delayed(const Duration(milliseconds: 20));
+    }
+
+    // Only first scroll should log (all within 300ms with same debounceKey)
+    expect(logCallCount, 1);
+
+    // Test 7: Works with all log methods
+    logCallCount = 0;
+    Dev.clearDebounceTimestamps();
+
+    Dev.log('Log ${DateTime.now()}',
+        debounceMs: 200, debounceKey: 'test_key', execFinalFunc: true);
+
+    Dev.logInfo('Info ${DateTime.now()}',
+        debounceMs: 200, debounceKey: 'test_key', execFinalFunc: true);
+
+    Dev.logWarning('Warning ${DateTime.now()}',
+        debounceMs: 200, debounceKey: 'test_key', execFinalFunc: true);
+
+    // Different levels but same debounceKey - should all be independent by level
+    // Each level should log once
+    expect(logCallCount, 3);
+
+    // Clean up
+    Dev.exeFinalFunc = null;
+    Dev.clearDebounceTimestamps();
+  });
 }

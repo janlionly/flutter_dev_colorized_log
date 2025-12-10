@@ -39,7 +39,20 @@ class DevColorizedLog {
     StackTrace? stackTrace,
     bool? execFinalFunc,
     String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
   }) {
+    // Check debounce - if in debounce period, skip this log
+    // Priority: use debounceKey if provided, otherwise fallback to msg|devLevel|name
+    if (debounceMs > 0) {
+      final key = debounceKey != null
+          ? '$debounceKey|$devLevel'
+          : '$msg|$devLevel|$name';
+      if (Dev.shouldDebounce(key, debounceMs)) {
+        return; // Skip this log - still in debounce period
+      }
+    }
+
     // Check if message contains keyword and was already logged once
     if (printOnceIfContains != null && msg.contains(printOnceIfContains)) {
       if (Dev.hasCachedKey(printOnceIfContains)) {
@@ -125,7 +138,7 @@ class DevColorizedLog {
           name: '\x1B[${colorInt}m$finalName\x1B[0m',
           zone: zone,
 
-          /// !!!: handled by _errorMessage above.
+          // !!!: handled by _errorMessage above.
           error: null, // error,
           stackTrace: null, //stackTrace,
         );
