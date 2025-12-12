@@ -8,7 +8,16 @@ import 'package:dev_colorized_log/dev_logger.dart';
 
 import 'package:flutter/foundation.dart';
 
+/// DevColorizedLog - Internal logging implementation with colorized output
+///
+/// This class provides the core logging functionality with ANSI color codes,
+/// emoji indicators, and various formatting options. It handles debouncing,
+/// one-time printing, and custom final function execution.
+///
+/// This is an internal implementation class used by the public Dev API.
 class DevColorizedLog {
+  /// Emoji indicators for each log level
+  /// Maps DevLevel enum values to their corresponding emoji symbols for visual identification
   static final levelEmojis = {
     DevLevel.verbose: '🔍', // Verbose - Detailed debug information
     DevLevel.normal: '🔖', // Normal - General purpose logs
@@ -20,8 +29,29 @@ class DevColorizedLog {
   };
 
   /// Internal flag to prevent infinite recursion
+  /// When true, prevents the final function from calling logging methods that would trigger it again
   static bool _isExecutingFinalFunc = false;
 
+  /// Custom log method with full control over formatting and behavior
+  /// @param[msg]: The message string to be logged
+  /// @param[devLevel]: The log level (verbose, normal, info, success, warn, error, fatal)
+  /// @param[enable]: Whether logging is globally enabled
+  /// @param[colorInt]: ANSI color code (0-107) for text color customization
+  /// @param[isLog]: If set to true, logs regardless of the enable flag
+  /// @param[isMultConsole]: If true, uses multi-console logging mode
+  /// @param[isDebugPrint]: If true, uses debugPrint; if false, uses print; if null, uses debugPrint in debug mode
+  /// @param[fileInfo]: File location information to display in the log
+  /// @param[time]: Custom timestamp for the log entry
+  /// @param[sequenceNumber]: Sequence number for log ordering
+  /// @param[level]: Numeric log level for dart:developer log
+  /// @param[name]: Custom name/tag for the log entry
+  /// @param[zone]: Dart Zone where the log originates from
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[execFinalFunc]: If true, executes the custom final function [Dev.exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logCustom(
     String msg, {
     required DevLevel devLevel,

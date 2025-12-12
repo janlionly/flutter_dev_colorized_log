@@ -6,18 +6,54 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'src/customized_logger.dart';
 
+/// Log level enumeration to categorize the severity of log messages
+/// - verbose: Detailed debug information (dark gray)
+/// - normal: Standard log messages (default color)
+/// - info: Informational messages (blue/cyan)
+/// - success: Success/completion messages (green)
+/// - warn: Warning messages (yellow)
+/// - error: Error messages (red)
+/// - fatal: Critical/fatal errors requiring immediate attention (orange/purple)
 enum DevLevel { verbose, normal, info, success, warn, error, fatal }
 
-/// @param static [enable]: whether log msg.
-/// @param static [isDebugPrint]: whether the method [Dev.print] printing only on debug mode.
-/// @param static [isLogFileLocation]: whether log the location file info.
-/// @param static [isLightweightMode]: Skip stack trace capture for maximum performance.
-/// @param static [useOptimizedStackTrace]: Use stack_trace package for 40-60% better performance (default: true).
-/// @pararm static [defaultColorInt]: the color int of log text.
+/// Dev - A flexible and colorized logging utility for Flutter/Dart development
+///
+/// This class provides various logging methods with customizable colors, levels,
+/// and advanced features like debouncing, one-time printing, and custom final functions.
+///
+/// Configuration properties:
+/// - [enable]: Global switch to enable/disable all logging
+/// - [isDebugPrint]: Whether [Dev.print] method prints only in debug mode
+/// - [isLogFileLocation]: Whether to log file location information
+/// - [isLightweightMode]: Skip stack trace capture for maximum performance
+/// - [useOptimizedStackTrace]: Use stack_trace package for 40-60% better performance (default: true)
+/// - [defaultColorInt]: Default ANSI color code (0-107) for log text
+/// - [prefixName]: Prefix string prepended to all log messages
+/// - [isLogShowDateTime]: Whether to display timestamp in logs
+/// - [isMultConsoleLog]: Whether to use multi-console logging mode
+/// - [logLevel]: Minimum log level threshold for console output
+/// - [exeLevel]: Minimum log level threshold for executing [exeFinalFunc]
+/// - [exeFinalFunc]: Custom callback function executed when log level meets threshold
+/// - [isExeWithDateTime]: Whether to include timestamp when executing final function
+/// - [isExeWithShowLog]: Whether to show log when executing final function
+/// - [isExeDiffColor]: Whether to use different colors for final function execution
+/// - [isReplaceNewline]: Whether to replace newline characters for better console visibility
+/// - [newlineReplacement]: Replacement string for newline characters
 class Dev {
+  /// Global switch to enable or disable all logging
+  /// When false, logs are suppressed unless overridden by individual log calls with isLog: true
   static bool enable = false;
+
+  /// Controls whether [Dev.print] method prints only in debug mode
+  /// If null, prints in all modes; if true, prints only in debug mode; if false, prints in all modes
   static bool? isDebugPrint;
+
+  /// Whether to log file location information in the output
+  /// When true, logs include file name and line number like "(main.dart:42):"
   static bool isLogFileLocation = true;
+
+  /// Default ANSI color code (0-107) for log text
+  /// If not specified, uses default colors based on log level
   static int? defaultColorInt;
 
   /// Lightweight mode: Skip stack trace capture completely for production
@@ -86,16 +122,23 @@ class Dev {
   static final Set<String> _cachedKeys = {};
 
   /// Check if a keyword has been cached (logged once)
+  /// @param[key]: The keyword to check in the cache
+  /// @return: Returns true if the keyword has been logged before, false otherwise
+  /// Used with [printOnceIfContains] parameter to prevent duplicate log messages
   static bool hasCachedKey(String key) {
     return _cachedKeys.contains(key);
   }
 
-  /// Add a keyword to cache
+  /// Add a keyword to the cache to mark it as logged
+  /// @param[key]: The keyword to add to the cache
+  /// After adding, subsequent logs containing this keyword will be suppressed when using [printOnceIfContains]
   static void addCachedKey(String key) {
     _cachedKeys.add(key);
   }
 
-  /// Clear all cached keywords
+  /// Clear all cached keywords to allow repeated logging
+  /// Removes all entries from the one-time print cache
+  /// Useful for resetting the print-once state during testing or at application restart
   static void clearCachedKeys() {
     _cachedKeys.clear();
   }
@@ -104,8 +147,13 @@ class Dev {
   /// Stores the last execution timestamp for each debounced log
   static final Map<String, DateTime> _debounceTimestamps = {};
 
-  /// Check if a log should be debounced
-  /// Returns true if the log should be skipped (still in debounce period)
+  /// Check if a log should be debounced based on time interval
+  /// @param[key]: The debounce key to identify the log entry
+  /// @param[debounceMs]: Debounce interval in milliseconds
+  /// @return: Returns true if the log should be skipped (still in debounce period), false to allow logging
+  ///
+  /// This prevents rapid-fire logging of the same message by enforcing a minimum time interval
+  /// between consecutive logs with the same key
   static bool shouldDebounce(String key, int debounceMs) {
     if (debounceMs <= 0) return false;
 
@@ -127,12 +175,16 @@ class Dev {
     return false;
   }
 
-  /// Clear all debounce timestamps
+  /// Clear all debounce timestamps to reset debounce state
+  /// Removes all entries from the debounce cache, allowing all debounced logs to fire immediately
+  /// Useful for resetting the debounce state during testing or at application restart
   static void clearDebounceTimestamps() {
     _debounceTimestamps.clear();
   }
 
-  /// the custom final function to execute when log level meets the threshold
+  /// Custom final function to execute when log level meets the threshold specified by [exeLevel]
+  /// Takes two parameters: the log message string and the DevLevel
+  /// Useful for custom log processing, remote logging, or error reporting
   static Function(String, DevLevel)? exeFinalFunc;
 
   /// @deprecated Use [exeFinalFunc] instead. This will be removed in future versions.
@@ -142,35 +194,46 @@ class Dev {
       _customFinalFunc = value;
   static Function(String, DevLevel)? _customFinalFunc;
 
-  /// whether log the date time
+  /// Whether to display timestamp in log output
+  /// When true, logs include date and time information
   static bool isLogShowDateTime = true;
 
-  /// whether execFinalFunc with date time
+  /// Whether to include timestamp when executing the final function [exeFinalFunc]
+  /// When true, timestamp is passed to the final function
   static bool isExeWithDateTime = false;
 
-  /// whether execFinalFunc with showing log
+  /// Whether to show log output when executing the final function [exeFinalFunc]
+  /// When true, logs are displayed in console even when final function is executed
   static bool isExeWithShowLog = true;
 
-  /// whether log with multiple consoles
+  /// Whether to use multi-console logging mode
+  /// When true, uses enhanced formatting suitable for multiple console outputs
   static bool isMultConsoleLog = true;
 
-  /// The lowest level threshold to execute the function of exeFinalFunc
+  /// The lowest level threshold to execute the function [exeFinalFunc]
+  /// Only logs at or above this level will trigger the final function
+  /// Default is warn (executes for warn, error, and fatal levels)
   static DevLevel exeLevel = DevLevel.warn;
 
   /// The lowest level threshold to print logs to console
-  /// Logs below this level will be ignored
-  /// Default is verbose (print all logs)
+  /// Logs below this level will be filtered out and not displayed
+  /// Default is verbose (prints all logs)
   static DevLevel logLevel = DevLevel.verbose;
 
-  /// whether execFinalFunc log with different color
+  /// Whether to use different background colors when executing final function
+  /// When true, uses background colors instead of text colors for [exeFinalFunc] execution
   static bool isExeDiffColor = false;
 
+  /// Prefix string prepended to all log messages
+  /// Useful for distinguishing logs from different modules or components
   static String prefixName = '';
 
-  /// whether replace newline characters and clean up whitespace for better search visibility in console
+  /// Whether to replace newline characters and clean up whitespace for better search visibility in console
+  /// When true, newline characters are replaced with [newlineReplacement] string
   static bool isReplaceNewline = false;
 
-  /// the character to replace newline characters with
+  /// The replacement string for newline characters when [isReplaceNewline] is true
+  /// Default is ' | ' to maintain readability while keeping logs on a single line
   static String newlineReplacement = ' | ';
 
   static Map<DevLevel, int> get _logColorMap => {
@@ -196,11 +259,21 @@ class Dev {
       : _logColorMap;
 
   /// Default color log
-  /// @param[colorInt]: 0 to 107
-  /// @param[isLog]: if set to true, the static [enable] is true or not, log anyway.
-  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[msg]: The message string to be logged
+  /// @param[level]: The log level (verbose, normal, info, success, warn, error, fatal), defaults to normal
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
+  /// @param[time]: Custom timestamp for the log; if null, uses current time
+  /// @param[sequenceNumber]: Sequence number for log ordering
+  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name
+  /// @param[zone]: Dart Zone where the log originates from
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void log(
     String msg, {
     DevLevel level = DevLevel.normal,
@@ -248,11 +321,20 @@ class Dev {
     );
   }
 
-  /// log supportting on multiple consoles
-  /// @param[isDebug]: default printing only on debug mode, not set using @param static [isDebugPrint].
-  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// Log supporting on multiple consoles
+  /// @param[object]: The object to be logged (will be converted to string)
+  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name with dbgPrt/unlPrt prefix
+  /// @param[level]: The log level (verbose, normal, info, success, warn, error, fatal), defaults to normal
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void print(Object? object,
       {String? name,
       DevLevel level = DevLevel.normal,
@@ -299,10 +381,20 @@ class Dev {
     );
   }
 
-  /// Execute custom final func with purple text or blue text with mult console
-  /// @param[printOnceIfContains]: if provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// Execute custom final func with purple text or blue text with multiple consoles
+  /// @param[msg]: The message string to be logged
+  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name (with prefix for multi-console)
+  /// @param[level]: The log level (verbose, normal, info, success, warn, error, fatal), defaults to normal
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode with dbgPrt/unlPrt prefix
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[fileInfo]: Custom file location string; if null, auto-detects from stack trace
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exe(String msg,
       {String? name,
       DevLevel level = DevLevel.normal,
@@ -349,6 +441,15 @@ class Dev {
     );
   }
 
+  /// Execute verbose level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeVerbose(
     String msg, {
     bool? isLog,
@@ -372,6 +473,15 @@ class Dev {
         debounceKey: debounceKey);
   }
 
+  /// Execute info level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeInfo(
     String msg, {
     bool? isLog,
@@ -395,6 +505,15 @@ class Dev {
         debounceKey: debounceKey);
   }
 
+  /// Execute success level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeSuccess(
     String msg, {
     bool? isLog,
@@ -418,6 +537,15 @@ class Dev {
         debounceKey: debounceKey);
   }
 
+  /// Execute warn level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeWarn(
     String msg, {
     bool? isLog,
@@ -441,7 +569,17 @@ class Dev {
         debounceKey: debounceKey);
   }
 
-  /// @Deprecated('Use exeWarn instead')
+  /// @deprecated Use [exeWarn] instead. This will be removed in future versions.
+  /// Execute warning level log with custom final function (deprecated)
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  @Deprecated('Use exeWarn instead')
   static void exeWarning(
     String msg, {
     bool? isLog,
@@ -462,6 +600,17 @@ class Dev {
         debounceKey: debounceKey);
   }
 
+  /// Execute error level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeError(
     String msg, {
     bool? isLog,
@@ -489,6 +638,15 @@ class Dev {
         debounceKey: debounceKey);
   }
 
+  /// Execute fatal level log with custom final function
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exeFatal(
     String msg, {
     bool? isLog,
@@ -514,6 +672,12 @@ class Dev {
 
   /// Verbose - Dark gray text for detailed debug information
   /// Use for verbose debugging details
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logVerbose(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -540,6 +704,12 @@ class Dev {
 
   /// Fatal/Critical error - text (orange/purple)
   /// Use for fatal errors that require immediate attention
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logFatal(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -565,6 +735,12 @@ class Dev {
   }
 
   /// Info - Blue text for informational messages
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logInfo(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -590,6 +766,12 @@ class Dev {
   }
 
   /// Success - Green text for success/completion messages
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logSuccess(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -615,6 +797,12 @@ class Dev {
   }
 
   /// Warn - Yellow text for warning messages
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logWarn(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -640,8 +828,15 @@ class Dev {
     );
   }
 
-  /// @Deprecated('Use logWarn instead')
+  /// @deprecated Use [logWarn] instead. This will be removed in future versions.
   /// Warning - Yellow text for warning messages (deprecated, use logWarn)
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  @Deprecated('Use logWarn instead')
   static void logWarning(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -657,6 +852,14 @@ class Dev {
   }
 
   /// Error - Red text for error messages
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void logError(String msg,
       {bool? isLog,
       bool? execFinalFunc,
