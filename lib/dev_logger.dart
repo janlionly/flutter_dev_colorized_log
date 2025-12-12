@@ -276,7 +276,8 @@ class Dev {
     var theName = name ?? level.toString().split('.').last;
 
     final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-    theName = '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
+    theName =
+        '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
 
     DevColorizedLog.logCustom(
       msg,
@@ -324,7 +325,8 @@ class Dev {
 
     if (isMult) {
       final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-      theName = '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
+      theName =
+          '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
     }
 
     DevColorizedLog.logCustom(

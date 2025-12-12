@@ -204,8 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Disable newline replacement to show difference
     Dev.isReplaceNewline = false;
-    Dev.logWarn(
-        'Multi-line warning without replacement:\n$multiLineExample');
+    Dev.logWarn('Multi-line warning without replacement:\n$multiLineExample');
 
     // Re-enable with custom replacement character
     Dev.isReplaceNewline = true;
@@ -272,7 +271,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
     Future<void>.delayed(const Duration(seconds: 3), () => catchErrorLog());
     Future<void>.delayed(const Duration(seconds: 4), () => debounceDemo());
-    Future<void>.delayed(const Duration(seconds: 5), () => logLevelFilterDemo());
+    Future<void>.delayed(
+        const Duration(seconds: 5), () => logLevelFilterDemo());
   }
 
   void logLevelFilterDemo() {
@@ -322,14 +322,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.logFatal('💣 Fatal: SHOWN');
 
     // Demo 5: Combine with exeLevel for dual control
-    Dev.logLevel = DevLevel.info;     // Console: info+
-    Dev.exeLevel = DevLevel.warn;  // Callback: warning+
+    Dev.logLevel = DevLevel.info; // Console: info+
+    Dev.exeLevel = DevLevel.warn; // Callback: warning+
     Dev.log('--- Level 5: Dual control demo ---');
     Dev.log('logLevel=info (console), exeLevel=warning (callback)');
-    
-    Dev.logInfo('📬 Info: Console ✓ shown, Callback ✗ not executed', execFinalFunc: true);
-    Dev.logWarn('🚧 Warning: Console ✓ shown, Callback ✓ executed', execFinalFunc: true);
-    Dev.logError('❌ Error: Console ✓ shown, Callback ✓ executed', execFinalFunc: true);
+
+    Dev.logInfo('📬 Info: Console ✓ shown, Callback ✗ not executed',
+        execFinalFunc: true);
+    Dev.logWarn('🚧 Warning: Console ✓ shown, Callback ✓ executed',
+        execFinalFunc: true);
+    Dev.logError('❌ Error: Console ✓ shown, Callback ✓ executed',
+        execFinalFunc: true);
 
     // Reset to default
     Dev.logLevel = DevLevel.verbose;
@@ -375,9 +378,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int i = 0; i < 5; i++) {
       Future<void>.delayed(Duration(milliseconds: i * 100), () {
         Dev.exe('API Request /users - Call ${i + 1} at ${DateTime.now()}',
-            level: DevLevel.success,
-            debounceMs: 500,
-            debounceKey: 'api_users');
+            level: DevLevel.success, debounceMs: 500, debounceKey: 'api_users');
       });
     }
 

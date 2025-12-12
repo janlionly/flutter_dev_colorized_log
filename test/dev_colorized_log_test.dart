@@ -493,11 +493,16 @@ void main() {
     Dev.logLevel = DevLevel.info;
     execCallCount = 0;
 
-    Dev.logVerbose('Verbose log', execFinalFunc: true); // Console filtered, but callback executes
-    Dev.log('Normal log', execFinalFunc: true); // Console filtered, but callback executes
-    Dev.logInfo('Info log', execFinalFunc: true); // Console shown, callback executes
-    Dev.logWarn('Warning log', execFinalFunc: true); // Console shown, callback executes
-    Dev.logError('Error log', execFinalFunc: true); // Console shown, callback executes
+    Dev.logVerbose('Verbose log',
+        execFinalFunc: true); // Console filtered, but callback executes
+    Dev.log('Normal log',
+        execFinalFunc: true); // Console filtered, but callback executes
+    Dev.logInfo('Info log',
+        execFinalFunc: true); // Console shown, callback executes
+    Dev.logWarn('Warning log',
+        execFinalFunc: true); // Console shown, callback executes
+    Dev.logError('Error log',
+        execFinalFunc: true); // Console shown, callback executes
 
     // All 5 callbacks execute (logLevel doesn't block execFinalFunc)
     expect(execCallCount, 5);
@@ -524,21 +529,26 @@ void main() {
     Dev.exeLevel = DevLevel.error; // Callback: only error+
     execCallCount = 0;
 
-    Dev.logVerbose('Verbose', execFinalFunc: true); // Console: filtered, Callback: filtered
-    Dev.logWarn('Warning', execFinalFunc: true); // Console: shown, Callback: filtered (below exeLevel)
-    Dev.logError('Error', execFinalFunc: true); // Console: shown, Callback: executed
-    Dev.logFatal('Fatal', execFinalFunc: true); // Console: shown, Callback: executed
+    Dev.logVerbose('Verbose',
+        execFinalFunc: true); // Console: filtered, Callback: filtered
+    Dev.logWarn('Warning',
+        execFinalFunc:
+            true); // Console: shown, Callback: filtered (below exeLevel)
+    Dev.logError('Error',
+        execFinalFunc: true); // Console: shown, Callback: executed
+    Dev.logFatal('Fatal',
+        execFinalFunc: true); // Console: shown, Callback: executed
 
     // Only 2 callbacks execute (error and fatal meet exeLevel threshold)
     expect(execCallCount, 2);
 
     // Test 4: Test without execFinalFunc - just verify no errors
     Dev.logLevel = DevLevel.error;
-    
+
     Dev.logVerbose('Verbose without callback'); // Console filtered
     Dev.log('Normal without callback'); // Console filtered
     Dev.logError('Error without callback'); // Console shown
-    
+
     // No errors should occur
 
     // Clean up - reset to default
