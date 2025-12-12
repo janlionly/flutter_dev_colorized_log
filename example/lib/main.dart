@@ -145,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     Dev.log('==========================Click to Log========================');
     Dev.log('Colorized text custom with colorInt-->: $_counter',
-        colorInt: _counter, execFinalFunc: true, level: DevLevel.logWar);
+        colorInt: _counter, execFinalFunc: true, level: DevLevel.warn);
   }
 
   void _testDebounce() {
@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     // This log will be debounced - rapid clicks within 2 seconds will be ignored
     // Using debounceKey because message contains dynamic _debounceClickCount
-    Dev.logWarning(
+    Dev.logWarn(
         'Debounce Test Button Clicked (Count: $_debounceClickCount) at ${DateTime.now()} - Try clicking rapidly!',
         debounceMs: 10000,
         debounceKey: 'test_button_click',
@@ -173,7 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Dev.defaultColorInt = 97;
 
-    Dev.exeLevel = DevLevel.logWar;
+    Dev.exeLevel = DevLevel.warn;
+    Dev.logLevel = DevLevel.verbose; // Show all logs (default)
     Dev.exeFinalFunc = (msg, level) {
       textViewKey.currentState?.appendText('${level.name}: $msg');
     };
@@ -199,17 +200,17 @@ class _MyHomePageState extends State<MyHomePage> {
 	Multiple    spaces   and	tabs
    End with spaces  ''';
 
-    Dev.logWarning('Messy whitespace cleaned up:\n$messyExample');
+    Dev.logWarn('Messy whitespace cleaned up:\n$messyExample');
 
     // Disable newline replacement to show difference
     Dev.isReplaceNewline = false;
-    Dev.logWarning(
+    Dev.logWarn(
         'Multi-line warning without replacement:\n$multiLineExample');
 
     // Re-enable with custom replacement character
     Dev.isReplaceNewline = true;
     Dev.newlineReplacement = ' >> ';
-    Dev.logWarning(
+    Dev.logWarn(
         'Multi-line warning with custom replacement:\n$multiLineExample');
 
     // Reset to default
@@ -218,11 +219,14 @@ class _MyHomePageState extends State<MyHomePage> {
     /// V 1.2.8 colorize multi lines
     Dev.log('===================== Multi lines log =====================');
     const multiLines = '''
-      🔴 [ERROR] UniqueID: 1
-      🕒 Timestamp: 2
-      📛 ErrorType: 3
-      💥 ErrorMessage: 4
-      📚 StackTrace: 5
+    ❌ [ERROR CAPTURED]:
+      🆔 Error ID: abc-123-def
+      🕒 Time: 2025-12-12 10:30:45
+      📛 Type: NetworkException
+      💥 Message: Connection timeout after 30s
+      📚 Stack Trace:
+      #0 fetchData (network.dart:42:5)
+      #1 main (main.dart:12:3)
     ''';
     Dev.logError(multiLines);
     Dev.isReplaceNewline = false;
@@ -233,12 +237,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Dev.log('==========================Log Level Log========================',
         name: 'logLev');
+    Dev.logVerbose('Colorized text Verbose (detailed debug info)');
     Dev.log('Colorized text log', fileLocation: 'main.dart:90xx---------');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
-    Dev.logWarning('Colorized text Warning');
+    Dev.logWarn('Colorized text Warning');
     Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink');
+    Dev.logFatal('Colorized text fatal');
     Dev.log(
         '==========================Log Level Log End ======================',
         isLog: true);
@@ -246,12 +251,13 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.print(
         '==========================Print Level Log========================',
         name: 'logLev');
-    Dev.print('Colorized text log', level: DevLevel.logNor);
-    Dev.print('Colorized text Info', level: DevLevel.logInf);
-    Dev.print('Colorized text Success', level: DevLevel.logSuc);
-    Dev.print('Colorized text Warning', level: DevLevel.logWar);
-    Dev.print('Colorized text Error', level: DevLevel.logErr);
-    Dev.print('Colorized text blink', level: DevLevel.logBlk);
+    Dev.print('Colorized text Verbose', level: DevLevel.verbose);
+    Dev.print('Colorized text log', level: DevLevel.normal);
+    Dev.print('Colorized text Info', level: DevLevel.info);
+    Dev.print('Colorized text Success', level: DevLevel.success);
+    Dev.print('Colorized text Warning', level: DevLevel.warn);
+    Dev.print('Colorized text Error', level: DevLevel.error);
+    Dev.print('Colorized text fatal', level: DevLevel.fatal);
     Dev.print(
         '==========================Print Level Log End =====================',
         name: 'logLev');
@@ -260,12 +266,78 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.print('Dev text print Not Debug: $text', isDebug: false, isLog: true);
     Dev.print('Dev text print2: $text', isLog: true);
 
-    Dev.print('Dev text pirnt with the given level', level: DevLevel.logErr);
+    Dev.print('Dev text pirnt with the given level', level: DevLevel.error);
 
     Future<void>.delayed(const Duration(seconds: 1), () => allLevelLog());
     Future<void>.delayed(const Duration(seconds: 2), () => exeLog());
     Future<void>.delayed(const Duration(seconds: 3), () => catchErrorLog());
     Future<void>.delayed(const Duration(seconds: 4), () => debounceDemo());
+    Future<void>.delayed(const Duration(seconds: 5), () => logLevelFilterDemo());
+  }
+
+  void logLevelFilterDemo() {
+    Dev.log(
+        '==========================Log Level Filter Demo========================');
+
+    Dev.log('📌 Demo: Two-level control system');
+    Dev.log('   logLevel = controls CONSOLE OUTPUT');
+    Dev.log('   exeLevel = controls CALLBACK EXECUTION');
+
+    // Demo 1: Show all levels first (default)
+    Dev.logLevel = DevLevel.verbose;
+    Dev.log('--- Level 1: logLevel = verbose (show all in console) ---');
+    Dev.logVerbose('🔍 Verbose: Detailed debug info - SHOWN IN CONSOLE');
+    Dev.log('🔖 Normal: General log - SHOWN IN CONSOLE');
+    Dev.logInfo('📬 Info: Informational message - SHOWN IN CONSOLE');
+    Dev.logSuccess('🎉 Success: Operation completed - SHOWN IN CONSOLE');
+    Dev.logWarn('🚧 Warning: Potential issue - SHOWN IN CONSOLE');
+    Dev.logError('❌ Error: Something went wrong - SHOWN IN CONSOLE');
+    Dev.logFatal('💣 Fatal: Critical error - SHOWN IN CONSOLE');
+
+    // Demo 2: Filter verbose and normal from console
+    Dev.logLevel = DevLevel.info;
+    Dev.log('--- Level 2: logLevel = info (hide verbose & normal) ---');
+    Dev.logVerbose('🔍 Verbose: HIDDEN from console');
+    Dev.log('🔖 Normal: HIDDEN from console');
+    Dev.logInfo('📬 Info: SHOWN IN CONSOLE');
+    Dev.logWarn('🚧 Warning: SHOWN IN CONSOLE');
+    Dev.logError('❌ Error: SHOWN IN CONSOLE');
+
+    // Demo 3: Production mode - only show warnings and errors
+    Dev.logLevel = DevLevel.warn;
+    Dev.log('--- Level 3: logLevel = warning (production mode) ---');
+    Dev.logVerbose('🔍 Verbose: HIDDEN');
+    Dev.log('🔖 Normal: HIDDEN');
+    Dev.logInfo('📬 Info: HIDDEN');
+    Dev.logSuccess('🎉 Success: HIDDEN');
+    Dev.logWarn('🚧 Warning: SHOWN (important!)');
+    Dev.logError('❌ Error: SHOWN (critical!)');
+    Dev.logFatal('💣 Fatal: SHOWN (urgent!)');
+
+    // Demo 4: Critical production - only errors
+    Dev.logLevel = DevLevel.error;
+    Dev.log('--- Level 4: logLevel = error (critical production) ---');
+    Dev.logWarn('🚧 Warning: HIDDEN from console');
+    Dev.logError('❌ Error: SHOWN');
+    Dev.logFatal('💣 Fatal: SHOWN');
+
+    // Demo 5: Combine with exeLevel for dual control
+    Dev.logLevel = DevLevel.info;     // Console: info+
+    Dev.exeLevel = DevLevel.warn;  // Callback: warning+
+    Dev.log('--- Level 5: Dual control demo ---');
+    Dev.log('logLevel=info (console), exeLevel=warning (callback)');
+    
+    Dev.logInfo('📬 Info: Console ✓ shown, Callback ✗ not executed', execFinalFunc: true);
+    Dev.logWarn('🚧 Warning: Console ✓ shown, Callback ✓ executed', execFinalFunc: true);
+    Dev.logError('❌ Error: Console ✓ shown, Callback ✓ executed', execFinalFunc: true);
+
+    // Reset to default
+    Dev.logLevel = DevLevel.verbose;
+    Dev.exeLevel = DevLevel.warn;
+    Dev.log('--- Reset to default: logLevel=verbose, exeLevel=warning ---');
+
+    Dev.log(
+        '==========================Log Level Filter Demo End====================');
   }
 
   void debounceDemo() {
@@ -292,18 +364,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // Demo 3: Different messages have independent debounce
-    Dev.logWarning('Warning A - This should log',
+    Dev.logWarn('Warning A - This should log',
         debounceMs: 800, execFinalFunc: true);
-    Dev.logWarning('Warning B - This should also log (different message)',
+    Dev.logWarn('Warning B - This should also log (different message)',
         debounceMs: 800, execFinalFunc: true);
-    Dev.logWarning('Warning A - SKIPPED (same as first)',
+    Dev.logWarn('Warning A - SKIPPED (same as first)',
         debounceMs: 800, execFinalFunc: true);
 
     // Demo 4: API request simulation with debounce (using debounceKey)
     for (int i = 0; i < 5; i++) {
       Future<void>.delayed(Duration(milliseconds: i * 100), () {
         Dev.exe('API Request /users - Call ${i + 1} at ${DateTime.now()}',
-            level: DevLevel.logSuc, debounceMs: 500, debounceKey: 'api_users');
+            level: DevLevel.success,
+            debounceMs: 500,
+            debounceKey: 'api_users');
       });
     }
 
@@ -318,7 +392,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Demo 6: Scroll position simulation with debounceKey
     Future<void>.delayed(const Duration(milliseconds: 2000), () {
       for (double offset = 0; offset < 500; offset += 50) {
-        Dev.logWarning('Scroll position: ${offset}px',
+        Dev.logWarn('Scroll position: ${offset}px',
             debounceMs: 300,
             debounceKey: 'scroll_position',
             execFinalFunc: true);
@@ -335,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Dev.print(x);
     } catch (e) {
       /// V 1.2.8 special error formatter
-      Dev.print(e, error: e, level: DevLevel.logErr);
+      Dev.print(e, error: e, level: DevLevel.error);
       Dev.logError('$e', error: e);
       Dev.exeError('$e', error: e, colorInt: 91);
     }
@@ -346,28 +420,29 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void exeLog() {
-    Dev.exe('!!!!1.Exec Colorized text Success', level: DevLevel.logSuc);
+    Dev.exe('!!!!1.Exec Colorized text Success', level: DevLevel.success);
     Dev.exe('!!!!1.Exec Colorized text');
-    Dev.exe('!!!!2.Exec Colorized text Warning', level: DevLevel.logWar);
+    Dev.exe('!!!!2.Exec Colorized text Warning', level: DevLevel.warn);
     Dev.exe('!!!!3.Exec Colorized text Warning ColorInt',
-        level: DevLevel.logWar, colorInt: 101);
+        level: DevLevel.warn, colorInt: 101);
     Dev.exe('!!!!4.Exec Colorized text Success Without logging',
-        level: DevLevel.logSuc, isLog: false);
+        level: DevLevel.success, isLog: false);
     Dev.exe('!!!!5.Exec Colorized text Error With debug print',
-        level: DevLevel.logErr, isMultConsole: true);
+        level: DevLevel.error, isMultConsole: true);
     Dev.exe('!!!!6.Exec Colorized text Info With unlti print',
-        level: DevLevel.logInf, isMultConsole: true, isDebug: false);
+        level: DevLevel.info, isMultConsole: true, isDebug: false);
     Dev.exe('!!!!7.Exec Colorized text Success Without printing',
-        level: DevLevel.logSuc, isMultConsole: true, isLog: false);
+        level: DevLevel.success, isMultConsole: true, isLog: false);
 
     Dev.exe('==========================Exe Level Log========================',
         name: 'logLev');
     Dev.exe("Exec Normal");
+    Dev.exeVerbose("Exec Verbose (detailed debug)");
     Dev.exeInfo("Exec Info");
     Dev.exeSuccess("Exec Success");
-    Dev.exeWarning("Exec Warning");
+    Dev.exeWarn("Exec Warning");
     Dev.exeError("Exec Error");
-    Dev.exeBlink("Exec Blink");
+    Dev.exeFatal("Exec Fatal");
     Dev.exe('==========================Exe Level Log End =====================',
         name: 'logLev');
   }
@@ -375,16 +450,18 @@ class _MyHomePageState extends State<MyHomePage> {
   void allLevelLog() {
     Dev.log('==========================Level Log========================',
         name: 'logLev', execFinalFunc: true);
+    Dev.logVerbose('Colorized text Verbose execFinalFunc: true',
+        execFinalFunc: true);
     Dev.log('Colorized text log execFinalFunc: true',
         fileLocation: 'main.dart:90xx', execFinalFunc: true);
     Dev.logInfo('Colorized text Info execFinalFunc: true', execFinalFunc: true);
     Dev.logSuccess('Colorized text Success execFinalFunc: true',
         execFinalFunc: true);
-    Dev.logWarning('Colorized text Warning execFinalFunc: true',
+    Dev.logWarn('Colorized text Warning execFinalFunc: true',
         execFinalFunc: true);
     Dev.logError('Colorized text Error execFinalFunc: true',
         execFinalFunc: true);
-    Dev.logBlink('Colorized text blink execFinalFunc: true',
+    Dev.logFatal('Colorized text fatal execFinalFunc: true',
         execFinalFunc: true);
     Dev.log('========================Level Log End ======================',
         isLog: true, execFinalFunc: true);
@@ -396,13 +473,13 @@ class _MyHomePageState extends State<MyHomePage> {
         isLog: true, execFinalFunc: true);
 
     Dev.print('Dev text pirnt with the given level exec!!!',
-        level: DevLevel.logSuc, isLog: false, execFinalFunc: true);
+        level: DevLevel.success, isLog: false, execFinalFunc: true);
 
-    Dev.log('1.log success level', level: DevLevel.logSuc);
+    Dev.log('1.log success level', level: DevLevel.success);
     Dev.logSuccess('2.log success level');
     Dev.log('1.log success level and exec',
-        level: DevLevel.logSuc, execFinalFunc: true);
-    Dev.exe('2.log success level and exec', level: DevLevel.logSuc);
+        level: DevLevel.success, execFinalFunc: true);
+    Dev.exe('2.log success level and exec', level: DevLevel.success);
     Dev.exeSuccess('3.log success level and exec');
   }
 
@@ -469,7 +546,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const Text(
-              'Try clicking rapidly! Logs debounced for 2 seconds.',
+              'Try clicking rapidly! Logs debounced for 10 seconds.',
               style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 20),

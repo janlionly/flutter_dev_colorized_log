@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'src/customized_logger.dart';
 
-enum DevLevel { logNor, logInf, logSuc, logWar, logErr, logBlk }
+enum DevLevel { verbose, normal, info, success, warn, error, fatal }
 
 /// @param static [enable]: whether log msg.
 /// @param static [isDebugPrint]: whether the method [Dev.print] printing only on debug mode.
@@ -154,8 +154,13 @@ class Dev {
   /// whether log with multiple consoles
   static bool isMultConsoleLog = true;
 
-  /// the lowest level threshold to execute the function of customFinalFunc
-  static DevLevel exeLevel = DevLevel.logWar;
+  /// The lowest level threshold to execute the function of exeFinalFunc
+  static DevLevel exeLevel = DevLevel.warn;
+
+  /// The lowest level threshold to print logs to console
+  /// Logs below this level will be ignored
+  /// Default is verbose (print all logs)
+  static DevLevel logLevel = DevLevel.verbose;
 
   /// whether execFinalFunc log with different color
   static bool isExeDiffColor = false;
@@ -169,22 +174,24 @@ class Dev {
   static String newlineReplacement = ' | ';
 
   static Map<DevLevel, int> get _logColorMap => {
-        DevLevel.logNor: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
-        DevLevel.logInf: 96,
-        DevLevel.logSuc: 92,
-        DevLevel.logWar: 93,
-        DevLevel.logErr: 91,
-        DevLevel.logBlk: isMultConsoleLog ? 95 : 5,
+        DevLevel.verbose: 90, // Dark gray for verbose
+        DevLevel.normal: (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)),
+        DevLevel.info: 96,
+        DevLevel.success: 92,
+        DevLevel.warn: 93,
+        DevLevel.error: 91,
+        DevLevel.fatal: isMultConsoleLog ? 95 : 5,
       };
 
   static Map<DevLevel, int> get _exeColorMap => isExeDiffColor
       ? {
-          DevLevel.logNor: 44,
-          DevLevel.logInf: 46,
-          DevLevel.logSuc: 42,
-          DevLevel.logWar: 43,
-          DevLevel.logErr: 41,
-          DevLevel.logBlk: isMultConsoleLog ? 47 : 6,
+          DevLevel.verbose: 100, // Dark gray background for verbose
+          DevLevel.normal: 44,
+          DevLevel.info: 46,
+          DevLevel.success: 42,
+          DevLevel.warn: 43,
+          DevLevel.error: 41,
+          DevLevel.fatal: isMultConsoleLog ? 47 : 6,
         }
       : _logColorMap;
 
@@ -196,7 +203,7 @@ class Dev {
   /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void log(
     String msg, {
-    DevLevel level = DevLevel.logNor,
+    DevLevel level = DevLevel.normal,
     bool? isLog,
     int? colorInt,
     String? fileLocation,
@@ -216,7 +223,7 @@ class Dev {
             (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
     final String fileInfo =
         fileLocation != null ? '($fileLocation): ' : _getFileLocation();
-    final levelMap = {DevLevel.logWar: 1000, DevLevel.logErr: 2000};
+    final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
     final theName = name ?? level.toString().split('.').last;
 
     DevColorizedLog.logCustom(
@@ -248,7 +255,7 @@ class Dev {
   /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void print(Object? object,
       {String? name,
-      DevLevel level = DevLevel.logNor,
+      DevLevel level = DevLevel.normal,
       int? colorInt,
       bool? isLog,
       String? fileLocation,
@@ -269,7 +276,7 @@ class Dev {
     var theName = name ?? level.toString().split('.').last;
 
     final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-    theName = theName.replaceAll('log', prefix);
+    theName = '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
 
     DevColorizedLog.logCustom(
       msg,
@@ -297,7 +304,7 @@ class Dev {
   /// @param[debounceKey]: custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   static void exe(String msg,
       {String? name,
-      DevLevel level = DevLevel.logNor,
+      DevLevel level = DevLevel.normal,
       bool? isLog,
       bool? isMultConsole,
       bool? isDebug,
@@ -313,11 +320,11 @@ class Dev {
     bool isMult = isMultConsole != null && isMultConsole;
     var theName = name ?? level.toString().split('.').last;
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
-    final levelMap = {DevLevel.logWar: 1000, DevLevel.logErr: 2000};
+    final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
 
     if (isMult) {
       final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-      theName = theName.replaceAll('log', prefix);
+      theName = '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
     }
 
     DevColorizedLog.logCustom(
@@ -340,6 +347,29 @@ class Dev {
     );
   }
 
+  static void exeVerbose(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+  }) {
+    final String fileInfo = _getFileLocation();
+    Dev.exe(msg,
+        isLog: isLog,
+        isMultConsole: isMultConsole,
+        isDebug: isDebug,
+        fileInfo: fileInfo,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.verbose],
+        level: DevLevel.verbose,
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
+  }
+
   static void exeInfo(
     String msg, {
     bool? isLog,
@@ -356,8 +386,8 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: colorInt ?? _exeColorMap[DevLevel.logInf],
-        level: DevLevel.logInf,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.info],
+        level: DevLevel.info,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
         debounceKey: debounceKey);
@@ -379,14 +409,14 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: colorInt ?? _exeColorMap[DevLevel.logSuc],
-        level: DevLevel.logSuc,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.success],
+        level: DevLevel.success,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
         debounceKey: debounceKey);
   }
 
-  static void exeWarning(
+  static void exeWarn(
     String msg, {
     bool? isLog,
     bool? isMultConsole,
@@ -402,8 +432,29 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: colorInt ?? _exeColorMap[DevLevel.logWar],
-        level: DevLevel.logWar,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.warn],
+        level: DevLevel.warn,
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
+  }
+
+  /// @Deprecated('Use exeWarn instead')
+  static void exeWarning(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+  }) {
+    exeWarn(msg,
+        isLog: isLog,
+        isMultConsole: isMultConsole,
+        isDebug: isDebug,
+        colorInt: colorInt,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
         debounceKey: debounceKey);
@@ -427,8 +478,8 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: colorInt ?? _exeColorMap[DevLevel.logErr],
-        level: DevLevel.logErr,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.error],
+        level: DevLevel.error,
         error: error,
         stackTrace: stackTrace,
         printOnceIfContains: printOnceIfContains,
@@ -436,7 +487,7 @@ class Dev {
         debounceKey: debounceKey);
   }
 
-  static void exeBlink(
+  static void exeFatal(
     String msg, {
     bool? isLog,
     bool? isMultConsole,
@@ -452,15 +503,16 @@ class Dev {
         isMultConsole: isMultConsole,
         isDebug: isDebug,
         fileInfo: fileInfo,
-        colorInt: colorInt ?? _exeColorMap[DevLevel.logBlk],
-        level: DevLevel.logBlk,
+        colorInt: colorInt ?? _exeColorMap[DevLevel.fatal],
+        level: DevLevel.fatal,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
         debounceKey: debounceKey);
   }
 
-  /// Blink orange text
-  static void logBlink(String msg,
+  /// Verbose - Dark gray text for detailed debug information
+  /// Use for verbose debugging details
+  static void logVerbose(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
@@ -469,14 +521,14 @@ class Dev {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
-      devLevel: DevLevel.logBlk,
+      devLevel: DevLevel.verbose,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.logBlk]!
-          : _logColorMap[DevLevel.logBlk]!,
+          ? _exeColorMap[DevLevel.verbose]!
+          : _logColorMap[DevLevel.verbose]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: 'logBlk',
+      name: DevLevel.verbose.name, // Use enum name instead of hardcoded string
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -484,7 +536,33 @@ class Dev {
     );
   }
 
-  /// Blue text
+  /// Fatal/Critical error - text (orange/purple)
+  /// Use for fatal errors that require immediate attention
+  static void logFatal(String msg,
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
+    final String fileInfo = _getFileLocation();
+    DevColorizedLog.logCustom(
+      msg,
+      devLevel: DevLevel.fatal,
+      enable: Dev.enable,
+      colorInt: execFinalFunc != null && execFinalFunc
+          ? _exeColorMap[DevLevel.fatal]!
+          : _logColorMap[DevLevel.fatal]!,
+      isLog: isLog,
+      fileInfo: fileInfo,
+      name: DevLevel.fatal.name, // Use enum name instead of hardcoded string
+      execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
+    );
+  }
+
+  /// Info - Blue text for informational messages
   static void logInfo(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -494,14 +572,14 @@ class Dev {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
-      devLevel: DevLevel.logInf,
+      devLevel: DevLevel.info,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.logInf]!
-          : _logColorMap[DevLevel.logInf]!,
+          ? _exeColorMap[DevLevel.info]!
+          : _logColorMap[DevLevel.info]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: 'logInf',
+      name: DevLevel.info.name, // Use enum name instead of hardcoded string
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -509,7 +587,7 @@ class Dev {
     );
   }
 
-  /// Green text
+  /// Success - Green text for success/completion messages
   static void logSuccess(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -519,14 +597,14 @@ class Dev {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
-      devLevel: DevLevel.logSuc,
+      devLevel: DevLevel.success,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.logSuc]!
-          : _logColorMap[DevLevel.logSuc]!,
+          ? _exeColorMap[DevLevel.success]!
+          : _logColorMap[DevLevel.success]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: 'logSuc',
+      name: DevLevel.success.name, // Use enum name instead of hardcoded string
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -534,8 +612,8 @@ class Dev {
     );
   }
 
-  /// Yellow text
-  static void logWarning(String msg,
+  /// Warn - Yellow text for warning messages
+  static void logWarn(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
@@ -544,15 +622,15 @@ class Dev {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
-      devLevel: DevLevel.logWar,
+      devLevel: DevLevel.warn,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.logWar]!
-          : _logColorMap[DevLevel.logWar]!,
+          ? _exeColorMap[DevLevel.warn]!
+          : _logColorMap[DevLevel.warn]!,
       isLog: isLog,
       fileInfo: fileInfo,
       level: 1000,
-      name: 'logWar',
+      name: DevLevel.warn.name, // Use enum name instead of hardcoded string
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -560,7 +638,23 @@ class Dev {
     );
   }
 
-  /// Red text
+  /// @Deprecated('Use logWarn instead')
+  /// Warning - Yellow text for warning messages (deprecated, use logWarn)
+  static void logWarning(String msg,
+      {bool? isLog,
+      bool? execFinalFunc,
+      String? printOnceIfContains,
+      int debounceMs = 0,
+      String? debounceKey}) {
+    logWarn(msg,
+        isLog: isLog,
+        execFinalFunc: execFinalFunc,
+        printOnceIfContains: printOnceIfContains,
+        debounceMs: debounceMs,
+        debounceKey: debounceKey);
+  }
+
+  /// Error - Red text for error messages
   static void logError(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -572,15 +666,15 @@ class Dev {
     final String fileInfo = _getFileLocation();
     DevColorizedLog.logCustom(
       msg,
-      devLevel: DevLevel.logErr,
+      devLevel: DevLevel.error,
       enable: Dev.enable,
       colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.logErr]!
-          : _logColorMap[DevLevel.logErr]!,
+          ? _exeColorMap[DevLevel.error]!
+          : _logColorMap[DevLevel.error]!,
       isLog: isLog,
       fileInfo: fileInfo,
       level: 2000,
-      name: 'logErr',
+      name: DevLevel.error.name, // Use enum name instead of hardcoded string
       execFinalFunc: execFinalFunc,
       error: error,
       stackTrace: stackTrace,

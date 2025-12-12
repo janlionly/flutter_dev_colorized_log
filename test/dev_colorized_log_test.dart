@@ -4,12 +4,13 @@ import 'package:dev_colorized_log/dev_colorized_log.dart';
 
 void main() {
   test('adds one to input values', () {
+    Dev.logVerbose('Colorized text Verbose');
     Dev.log('Colorized text log');
     Dev.logInfo('Colorized text Info');
     Dev.logSuccess('Colorized text Success');
-    Dev.logWarning('Colorized text Warning');
+    Dev.logWarn('Colorized text Warning');
     Dev.logError('Colorized text Error');
-    Dev.logBlink('Colorized text blink', isLog: true);
+    Dev.logFatal('Colorized text fatal', isLog: true);
   });
 
   test('test defaultColorInt dynamic update', () {
@@ -65,7 +66,7 @@ void main() {
   test('test exeFinalFunc and backward compatibility', () {
     // Test new exeFinalFunc
     Dev.enable = true;
-    Dev.exeLevel = DevLevel.logNor;
+    Dev.exeLevel = DevLevel.normal;
 
     String? capturedMsg;
     DevLevel? capturedLevel;
@@ -75,9 +76,9 @@ void main() {
       capturedLevel = level;
     };
 
-    Dev.exe('Test exeFinalFunc', level: DevLevel.logInf);
+    Dev.exe('Test exeFinalFunc', level: DevLevel.info);
     expect(capturedMsg?.contains('Test exeFinalFunc'), true);
-    expect(capturedLevel, DevLevel.logInf);
+    expect(capturedLevel, DevLevel.info);
 
     // Test backward compatibility with deprecated customFinalFunc
     String? deprecatedCapturedMsg;
@@ -91,12 +92,12 @@ void main() {
     };
 
     Dev.exe('Test customFinalFunc backward compatibility',
-        level: DevLevel.logWar);
+        level: DevLevel.warn);
     expect(
         deprecatedCapturedMsg
             ?.contains('Test customFinalFunc backward compatibility'),
         true);
-    expect(deprecatedCapturedLevel, DevLevel.logWar);
+    expect(deprecatedCapturedLevel, DevLevel.warn);
 
     // Test infinite recursion prevention
     int callCount = 0;
@@ -115,7 +116,7 @@ void main() {
       Dev.exeError('Recursive call attempt customFinalFunc $callCount');
     };
 
-    Dev.exe('Test recursion prevention', level: DevLevel.logErr);
+    Dev.exe('Test recursion prevention', level: DevLevel.error);
 
     // The callback should only be called once due to recursion prevention
     expect(callCount, 1);
@@ -139,7 +140,7 @@ void main() {
       exeCallCount++;
     };
 
-    Dev.exeLevel = DevLevel.logNor;
+    Dev.exeLevel = DevLevel.normal;
 
     // First call with message containing 'ERROR-001' should execute
     Dev.log('API request failed: ERROR-001 timeout',
@@ -189,7 +190,7 @@ void main() {
         isLog: true, printOnceIfContains: 'user-123', execFinalFunc: true);
     Dev.logInfo('User action: user-123 clicked button',
         isLog: true, printOnceIfContains: 'user-123', execFinalFunc: true);
-    Dev.logWarning('Warning: invalid-token detected',
+    Dev.logWarn('Warning: invalid-token detected',
         isLog: true, printOnceIfContains: 'invalid-token', execFinalFunc: true);
     Dev.logError('Error: connection-lost event',
         isLog: true,
@@ -222,7 +223,7 @@ void main() {
       logCallCount++;
     };
 
-    Dev.exeLevel = DevLevel.logNor;
+    Dev.exeLevel = DevLevel.normal;
 
     // Test 1: Basic debounce - rapid calls within 500ms should be throttled
     Dev.log('Debounce test 1',
@@ -265,7 +266,7 @@ void main() {
 
     Dev.logInfo('Same message',
         isLog: true, debounceMs: 300, execFinalFunc: true);
-    Dev.logWarning('Same message',
+    Dev.logWarn('Same message',
         isLog: true, debounceMs: 300, execFinalFunc: true);
     Dev.logError('Same message',
         isLog: true, debounceMs: 300, execFinalFunc: true);
@@ -326,7 +327,7 @@ void main() {
     Dev.exeInfo('Info exe', debounceMs: 200); // Skipped
     expect(logCallCount, 2);
 
-    Dev.exeWarning('Warning exe', debounceMs: 200);
+    Dev.exeWarn('Warning exe', debounceMs: 200);
     Dev.exeError('Error exe', debounceMs: 200);
     expect(logCallCount, 4);
 
@@ -347,7 +348,7 @@ void main() {
       logCallCount++;
     };
 
-    Dev.exeLevel = DevLevel.logNor;
+    Dev.exeLevel = DevLevel.normal;
 
     // Test 1: Messages with dynamic content but same debounceKey should be debounced
     Dev.log('Button clicked at ${DateTime.now()}',
@@ -382,18 +383,18 @@ void main() {
     logCallCount = 0;
     Dev.clearDebounceTimestamps();
 
-    Dev.logWarning('Event A at ${DateTime.now()}',
+    Dev.logWarn('Event A at ${DateTime.now()}',
         debounceMs: 300, debounceKey: 'event_a', execFinalFunc: true);
 
-    Dev.logWarning('Event B at ${DateTime.now()}',
+    Dev.logWarn('Event B at ${DateTime.now()}',
         debounceMs: 300, debounceKey: 'event_b', execFinalFunc: true);
 
-    Dev.logWarning('Event A at ${DateTime.now()}',
+    Dev.logWarn('Event A at ${DateTime.now()}',
         debounceMs: 300,
         debounceKey: 'event_a',
         execFinalFunc: true); // Skipped - same key as first
 
-    Dev.logWarning('Event B at ${DateTime.now()}',
+    Dev.logWarn('Event B at ${DateTime.now()}',
         debounceMs: 300,
         debounceKey: 'event_b',
         execFinalFunc: true); // Skipped - same key as second
@@ -460,7 +461,7 @@ void main() {
     Dev.logInfo('Info ${DateTime.now()}',
         debounceMs: 200, debounceKey: 'test_key', execFinalFunc: true);
 
-    Dev.logWarning('Warning ${DateTime.now()}',
+    Dev.logWarn('Warning ${DateTime.now()}',
         debounceMs: 200, debounceKey: 'test_key', execFinalFunc: true);
 
     // Different levels but same debounceKey - should all be independent by level
@@ -470,5 +471,79 @@ void main() {
     // Clean up
     Dev.exeFinalFunc = null;
     Dev.clearDebounceTimestamps();
+  });
+
+  test('test logLevel functionality - filter console output below threshold',
+      () {
+    // Note: logLevel only filters console output, not execFinalFunc execution
+    // This test verifies that logs are still processed (execFinalFunc called)
+    // but console output is filtered based on logLevel
+    Dev.enable = true;
+
+    int execCallCount = 0;
+
+    Dev.exeFinalFunc = (msg, level) {
+      execCallCount++;
+    };
+
+    Dev.exeLevel = DevLevel.verbose; // Execute all levels
+
+    // Test 1: logLevel = info - verbose and normal logs still execute callbacks
+    // but won't print to console
+    Dev.logLevel = DevLevel.info;
+    execCallCount = 0;
+
+    Dev.logVerbose('Verbose log', execFinalFunc: true); // Console filtered, but callback executes
+    Dev.log('Normal log', execFinalFunc: true); // Console filtered, but callback executes
+    Dev.logInfo('Info log', execFinalFunc: true); // Console shown, callback executes
+    Dev.logWarn('Warning log', execFinalFunc: true); // Console shown, callback executes
+    Dev.logError('Error log', execFinalFunc: true); // Console shown, callback executes
+
+    // All 5 callbacks execute (logLevel doesn't block execFinalFunc)
+    expect(execCallCount, 5);
+
+    // Test 2: Verify logs are created even when filtered from console
+    Dev.logLevel = DevLevel.warn;
+    execCallCount = 0;
+
+    // These still trigger execFinalFunc even though console output is filtered
+    Dev.logVerbose('Verbose', execFinalFunc: true);
+    Dev.log('Normal', execFinalFunc: true);
+    Dev.logInfo('Info', execFinalFunc: true);
+    Dev.logSuccess('Success', execFinalFunc: true);
+    Dev.logWarn('Warning', execFinalFunc: true);
+    Dev.logError('Error', execFinalFunc: true);
+    Dev.logFatal('Fatal', execFinalFunc: true);
+
+    // All 7 callbacks execute
+    expect(execCallCount, 7);
+
+    // Test 3: Combine logLevel and exeLevel for dual filtering
+    // logLevel filters console output, exeLevel filters callback execution
+    Dev.logLevel = DevLevel.warn; // Console: only warning+
+    Dev.exeLevel = DevLevel.error; // Callback: only error+
+    execCallCount = 0;
+
+    Dev.logVerbose('Verbose', execFinalFunc: true); // Console: filtered, Callback: filtered
+    Dev.logWarn('Warning', execFinalFunc: true); // Console: shown, Callback: filtered (below exeLevel)
+    Dev.logError('Error', execFinalFunc: true); // Console: shown, Callback: executed
+    Dev.logFatal('Fatal', execFinalFunc: true); // Console: shown, Callback: executed
+
+    // Only 2 callbacks execute (error and fatal meet exeLevel threshold)
+    expect(execCallCount, 2);
+
+    // Test 4: Test without execFinalFunc - just verify no errors
+    Dev.logLevel = DevLevel.error;
+    
+    Dev.logVerbose('Verbose without callback'); // Console filtered
+    Dev.log('Normal without callback'); // Console filtered
+    Dev.logError('Error without callback'); // Console shown
+    
+    // No errors should occur
+
+    // Clean up - reset to default
+    Dev.logLevel = DevLevel.verbose;
+    Dev.exeLevel = DevLevel.warn;
+    Dev.exeFinalFunc = null;
   });
 }

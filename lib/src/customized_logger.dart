@@ -10,12 +10,13 @@ import 'package:flutter/foundation.dart';
 
 class DevColorizedLog {
   static final levelEmojis = {
-    DevLevel.logNor: '🔖',
-    DevLevel.logInf: '📬',
-    DevLevel.logSuc: '🎉',
-    DevLevel.logWar: '🚧',
-    DevLevel.logErr: '❌',
-    DevLevel.logBlk: '💣',
+    DevLevel.verbose: '🔍', // Verbose - Detailed debug information
+    DevLevel.normal: '🔖', // Normal - General purpose logs
+    DevLevel.info: '📬', // Info - Informational messages
+    DevLevel.success: '🎉', // Success - Success/completion messages
+    DevLevel.warn: '🚧', // Warn - Warning messages
+    DevLevel.error: '❌', // Error - Error messages
+    DevLevel.fatal: '💣', // Fatal - Fatal/critical errors
   };
 
   /// Internal flag to prevent infinite recursion
@@ -101,9 +102,8 @@ class DevColorizedLog {
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
     name = '${levelEmojis[devLevel]}:${Dev.prefixName}$name';
-    final finalName = isExe
-        ? (name.contains('log') ? name.replaceFirst('log', 'exe') : '$name&exe')
-        : name;
+    // Since enum names no longer have 'log' prefix, directly append '&exe' for execution mode
+    final finalName = isExe ? '$name&exe' : name;
     DateTime now = DateTime.now();
     String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
 
@@ -114,6 +114,11 @@ class DevColorizedLog {
     void logging() {
       if (isExe && !Dev.isExeWithShowLog) {
         return;
+      }
+
+      // Check log level filter - skip if log level is below threshold
+      if (devLevel.index < Dev.logLevel.index) {
+        return; // Skip this log - level below threshold
       }
 
       // Process newlines for better search visibility
@@ -191,12 +196,14 @@ class DevColorizedLog {
     final stackTrace = details.stack?.toString() ?? 'No stack trace available';
 
     return '''
-  ❌ [ERROR] UniqueID: $errorId
-  🕒 Timestamp: $timestamp
-  📛 ErrorType: $errorType
-  💥 ErrorMessage: $errorMessage
-  📚 StackTrace: \n$stackTrace
-  ''';
+❌ [ERROR CAPTURED]:
+  🆔 Error ID: $errorId
+  🕒 Time: $timestamp
+  📛 Type: $errorType
+  💥 Message: $errorMessage
+  📚 Stack Trace:
+$stackTrace
+''';
   }
 
   static String _colorizeLines(String msg, int colorCode) {

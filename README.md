@@ -15,9 +15,25 @@ Dev.isLogFileLocation = true; // whether log the location file info
 Dev.defaultColorInt = 0; // default color text, int value from 0 to 107
 Dev.isDebugPrint = true; // Dev.print whether only log on debug mode
 
-/// V 2.0.8 Performance optimization options
-Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
-Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
+/// V 2.1.0 Log level filtering - control which logs are printed to console
+/// Set the minimum log level threshold - logs below this level will be filtered from console
+/// Note: logLevel only filters console output, execFinalFunc callbacks still execute
+Dev.logLevel = DevLevel.verbose; // Default: show all logs in console
+Dev.logLevel = DevLevel.info; // Console: only show info, success, warning, error, fatal
+Dev.logLevel = DevLevel.warn; // Console: only show warning, error, fatal
+Dev.logLevel = DevLevel.error; // Console: only show error and fatal
+
+// Example: Production environment - only show warnings and above in console
+Dev.logLevel = DevLevel.warn;
+Dev.exeLevel = DevLevel.error; // Only error+ will trigger exeFinalFunc
+
+Dev.logVerbose('Debug details'); // Console: filtered, Callback: filtered
+Dev.log('Normal log'); // Console: filtered, Callback: filtered
+Dev.logInfo('API response received'); // Console: filtered, Callback: filtered
+Dev.logSuccess('Task completed'); // Console: filtered, Callback: filtered
+Dev.logWarn('Deprecated API used'); // Console: ✓ shown, Callback: filtered (below exeLevel)
+Dev.logError('Network error'); // Console: ✓ shown, Callback: ✓ executed
+Dev.logFatal('Critical failure!'); // Console: ✓ shown, Callback: ✓ executed
 
 /// V 2.0.9 debounceMs + debounceKey for throttling rapid log calls
 /// Use debounceMs parameter to prevent log spam from repeated calls
@@ -25,6 +41,10 @@ Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better 
 Dev.logWarning('Button clicked', debounceMs: 2000); // Only logs once every 2 seconds
 Dev.logInfo('API call at ${DateTime.now()}', debounceMs: 1000, debounceKey: 'api_call'); // Logs with dynamic content
 Dev.clearDebounceTimestamps(); // Clear all debounce states if needed
+
+/// V 2.0.8 Performance optimization options
+Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
+Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
 
 /// V 2.0.7 printOnceIfContains for one-time logging when message contains keyword
 /// Use printOnceIfContains parameter to ensure only first log containing the keyword is printed
@@ -36,10 +56,10 @@ Dev.clearCachedKeys(); // Clear all cached keywords if needed
 Dev.isReplaceNewline = true; // whether replace newline characters (default false)
 Dev.newlineReplacement = ' | '; // replacement string for newlines (default ' | ')
 
-/// V 2.0.3
+/// V 2.0.3 prefix name
 Dev.prefixName = 'MyApp'; // prefix name
 
-/// V 2.0.2
+/// V 2.0.2 execFinalFunc with different color
 Dev.isExeDiffColor = false; // whether execFinalFunc with different color
 
 /// V 2.0.0 the lowest level threshold to execute the function of customFinalFunc
@@ -48,7 +68,6 @@ Dev.customFinalFunc = (msg, level) {
   // e.g.: your custom write msg to file
   writeToFile(msg, level);
 };
-
 
 /// V 1.2.8 colorize multi lines
 Dev.log('===================== Colorize multi lines log =====================');
@@ -67,15 +86,15 @@ Dev.print(e, error: e, level: DevLevel.logErr);
 Dev.logError('$e', error: e);
 Dev.exeError('$e', error: e, colorInt: 91);
 
-// V1.2.6 whether log on multi platform consoles like Xcode, VS Code, Terminal, etc.
+/// V1.2.6 whether log on multi platform consoles like Xcode, VS Code, Terminal, etc.
 Dev.isMultConsoleLog = true;
 
-// V1.2.2
+/// V1.2.2 log settings
 Dev.isLogShowDateTime = true; // whether log the date time
 Dev.isExeWithShowLog = true; // whether execFinalFunc with showing log
 Dev.isExeWithDateTime = false; // whether execFinalFunc with date time
 
-// V1.2.1
+/// V1.2.1 exe methods
 Dev.exe("Exec Normal");
 Dev.exeInfo("Exec Info");
 Dev.exeSuccess("Exec Success");
@@ -91,7 +110,7 @@ Dev.exe('2.log success level and exec', level: DevLevel.logSuc);
 Dev.exeSuccess('3.log success level and exec');
 // END
 
-// V1.2.0 Execute the custom function
+/// V1.2.0 Execute the custom function
 Dev.exe('!!! Exec Normal');
 Dev.exe('!!! Exec Colorized text Info Without log', level: DevLevel.logInf, isMultConsole: true, isLog: false, colorInt: 101);
 Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
@@ -100,13 +119,95 @@ Dev.print('Colorized text print with the given level', level: DevLevel.logWar);
 // then every level log func contains execFinalFunc param:
 Dev.log('Colorized text log to your process of log', execFinalFunc: true);
 
-// V1.1.6 custom function to support your process of log
+/// V1.1.6 custom function to support your process of log
 // Deprecated: Use exeFinalFunc instead (customFinalFunc will be removed in future versions)
 // Dev.customFinalFunc = (msg, level) {
 //   writeToFile(msg, level);  
 // };
 
 ## Migration Guide
+
+### DevLevel Enum Renaming (v2.1.0+)
+
+In version 2.1.0, the `DevLevel` enum values have been renamed for better readability:
+
+**Old names → New names:**
+- `DevLevel.logVer` → `DevLevel.verbose`
+- `DevLevel.logNor` → `DevLevel.normal`
+- `DevLevel.logInf` → `DevLevel.info`
+- `DevLevel.logSuc` → `DevLevel.success`
+- `DevLevel.logWar` → `DevLevel.warn`
+- `DevLevel.logErr` → `DevLevel.error`
+- `DevLevel.logBlk` → `DevLevel.fatal`
+
+**Migration example:**
+
+```dart
+// Old way (v2.0.x and earlier):
+Dev.log('Message', level: DevLevel.logWar); // → DevLevel.warn
+Dev.exeLevel = DevLevel.logErr;
+Dev.print('Print', level: DevLevel.logInf);
+
+// New way (v2.1.0+):
+Dev.log('Message', level: DevLevel.warn);
+Dev.exeLevel = DevLevel.error;
+Dev.print('Print', level: DevLevel.info);
+
+// Quick find & replace in your codebase:
+// DevLevel.logVer → DevLevel.verbose
+// DevLevel.logNor → DevLevel.normal
+// DevLevel.logInf → DevLevel.info
+// DevLevel.logSuc → DevLevel.success
+// DevLevel.logWar → DevLevel.warn
+// DevLevel.logErr → DevLevel.error
+// DevLevel.logBlk → DevLevel.fatal
+```
+
+**Note:** The log method names remain unchanged (`logInfo`, `logWarning`, `logError`, etc.).
+
+### Method Renaming: logBlink/exeBlink → logFatal/exeFatal (v2.1.0+)
+
+For consistency with the new enum naming, the "blink" methods have been renamed to "fatal":
+
+**Old methods → New methods:**
+- `Dev.logBlink()` → `Dev.logFatal()` ✅
+- `Dev.exeBlink()` → `Dev.exeFatal()` ✅
+
+**Migration example:**
+
+```dart
+// Old way (v2.0.x and earlier):
+Dev.logBlink('System crash!');
+Dev.exeBlink('Critical error!');
+
+// New way (v2.1.0+):
+Dev.logFatal('System crash!');
+Dev.exeFatal('Critical error!');
+```
+
+**Note:** The old methods (`logBlink`, `exeBlink`) have been **removed**. Please update your code to use the new method names `logFatal` and `exeFatal`.
+
+### New Shorter Method Names: logWarn/exeWarn (v2.1.0+)
+
+For consistency with the shortened enum value `DevLevel.warn`, new shorter method names are now recommended:
+
+**Old methods → New recommended methods:**
+- `Dev.logWarning()` → `Dev.logWarn()` ✅
+- `Dev.exeWarning()` → `Dev.exeWarn()` ✅
+
+**Migration example:**
+
+```dart
+// Old way (still works, but deprecated):
+Dev.logWarning('Slow query detected');
+Dev.exeWarning('Memory usage high');
+
+// New recommended way (v2.1.0+):
+Dev.logWarn('Slow query detected');
+Dev.exeWarn('Memory usage high');
+```
+
+**Note:** The old methods (`logWarning`, `exeWarning`) are deprecated but still functional for backward compatibility. We recommend migrating to the shorter names for consistency.
 
 ### From customFinalFunc to exeFinalFunc (v2.0.6+)
 
@@ -325,6 +426,39 @@ Dev.logInfo('Production log'); // No file location shown, maximum performance
 // Recommendation:
 // - Development: useOptimizedStackTrace = true, isLightweightMode = false
 // - Production: isLightweightMode = true (or disable Dev.enable entirely)
+
+// printOnceIfContains Examples (v2.0.7+)
+// Useful for preventing duplicate error logs in loops or repeated function calls
+
+for (var i = 0; i < 100; i++) {
+  // Only logs the FIRST time a message contains 'API-ERROR-500'
+  Dev.logWarning('Request failed: API-ERROR-500 timeout', printOnceIfContains: 'API-ERROR-500');
+  // Subsequent logs containing 'API-ERROR-500' are skipped
+}
+
+// Different keywords are independent
+Dev.log('User login failed: ERROR-001', printOnceIfContains: 'ERROR-001');  // ✓ Logged
+Dev.log('Database error: ERROR-002', printOnceIfContains: 'ERROR-002'); // ✓ Logged
+Dev.log('Retry login: ERROR-001 again', printOnceIfContains: 'ERROR-001'); // ✗ Skipped (contains 'ERROR-001')
+Dev.log('DB connection lost: ERROR-002', printOnceIfContains: 'ERROR-002'); // ✗ Skipped (contains 'ERROR-002')
+
+// Message doesn't contain keyword - always logs
+Dev.log('Normal log without error code', printOnceIfContains: 'ERROR-999'); // ✓ Logged (doesn't contain 'ERROR-999')
+
+// Clear cache to allow re-logging
+Dev.clearCachedKeys();
+Dev.log('After clear: ERROR-001 can log again', printOnceIfContains: 'ERROR-001'); // ✓ Logged (cache was cleared)
+
+// Practical use case: Log user actions only once per session
+Dev.logInfo('User user-123 logged in', printOnceIfContains: 'user-123');
+Dev.logInfo('User user-123 clicked button', printOnceIfContains: 'user-123'); // ✗ Skipped
+Dev.logInfo('User user-456 logged in', printOnceIfContains: 'user-456'); // ✓ Logged (different user)
+
+// Works with all log methods
+Dev.logInfo('Info: token-abc expired', printOnceIfContains: 'token-abc');
+Dev.logError('Error: connection-lost', printOnceIfContains: 'connection-lost');
+Dev.exe('Execute: task-001 started', printOnceIfContains: 'task-001');
+Dev.print('Print: session-xyz created', printOnceIfContains: 'session-xyz');
 ```
 
 ## Author

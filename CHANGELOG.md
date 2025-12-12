@@ -1,3 +1,20 @@
+## [2.1.0] - 12 Dec 2025
+
+**BREAKING CHANGES:**
+* Renamed `DevLevel` enum values for clarity: `logVer` → `verbose`, `logNor` → `normal`, `logInf` → `info`, `logSuc` → `success`, `logWar` → `warn`, `logErr` → `error`, `logBlk` → `fatal`
+* Renamed methods: `logBlink()` → `logFatal()`, `exeBlink()` → `exeFatal()` (old methods removed)
+* Migration required: Update all `DevLevel.*` references in your code
+
+**New Features:**
+* Added `DevLevel.verbose` level with `logVerbose()` and `exeVerbose()` methods for detailed debug output (dark gray)
+* Added `Dev.logLevel` property to filter console output by minimum level threshold (similar to `exeLevel` for callbacks)
+* Added `logWarn()` and `exeWarn()` as recommended shorter alternatives (old `logWarning()`/`exeWarning()` methods deprecated)
+
+**Improvements:**
+* Enhanced error formatting with clearer structure: `❌ [ERROR CAPTURED]:` header with 🆔 emoji and proper indentation
+* Refactored to use `DevLevel.xxx.name` internally for type safety and consistency
+* Log output now displays full level names (e.g., `[📬:info&exe]`, `[🚧:warn&exe]`)
+
 ## [2.0.9] - 10 Dec 2025
 
 * Feat: Added [debounceMs] parameter to all log methods (log, print, exe, logInfo, logSuccess, logWarning, logError, logBlink, exeInfo, exeSuccess, exeWarning, exeError, exeBlink) - throttles logs within the specified time interval in milliseconds.
