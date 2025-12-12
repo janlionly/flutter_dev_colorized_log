@@ -1,3 +1,9 @@
+## [2.1.1] - 12 Dec 2025
+
+* Docs: Reworked README with detailed feature breakdowns, richer examples, and clearer guidance on log filtering, debouncing, and customization options.
+* Docs: Added comprehensive API doc comments across `Dev` and `DevColorizedLog` methods to explain parameters, behaviors, and best practices.
+* Chore: Updated package description to reflect the broader positioning as a full logging utility rather than a simple colorizer.
+
 ## [2.1.0] - 12 Dec 2025
 
 **BREAKING CHANGES:**
