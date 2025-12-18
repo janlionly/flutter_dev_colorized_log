@@ -3,6 +3,7 @@
  * Date:   2023-09-21
  */
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'src/customized_logger.dart';
 
@@ -66,6 +67,40 @@ class Dev {
   /// When disabled, uses basic string operations (still 10-20% faster than original)
   static bool useOptimizedStackTrace = true;
 
+  /// Use fast print mode for better performance in multi-console logging
+  /// When true, uses print() instead of debugPrint() for faster output
+  /// When false, uses debugPrint() which is safer but slower
+  ///
+  /// Defaults to true in debug mode (kDebugMode) for faster feedback,
+  /// and false in release mode for safer logging
+  ///
+  /// Note: debugPrint throttles output (~800 chars at a time) to prevent log loss,
+  /// while print is faster but may lose logs if output is too frequent
+  ///
+  /// Recommendation:
+  /// - Development: true (default in debug mode) for faster feedback
+  /// - Production/Testing: false (default in release mode) for safer logging
+  static bool useFastPrint = kDebugMode;
+
+  /// Extract tag from file path
+  /// Searches for directory names in the file path that match any tag in [tags] set
+  /// Returns the first matching tag found, or null if no match
+  static String? _extractTagFromUri(Uri uri) {
+    if (tags == null || tags!.isEmpty) return null;
+
+    // Get all path segments (directories in the path)
+    final pathSegments = uri.pathSegments;
+
+    // Search for any segment that matches a tag
+    for (final segment in pathSegments) {
+      if (tags!.contains(segment)) {
+        return segment;
+      }
+    }
+
+    return null;
+  }
+
   /// Efficiently extract file location from stack trace
   /// Returns formatted string like "(main.dart:42): "
   static String _getFileLocation() {
@@ -94,6 +129,30 @@ class Dev {
     } else {
       return _getFileLocationBasic();
     }
+  }
+
+  /// Extract tag from stack trace
+  /// Returns the auto-detected tag from file path, or null if no match
+  static String? _getTagFromStackTrace() {
+    // Early return if tags is not configured or empty to avoid unnecessary stack trace capture
+    if (tags == null || tags!.isEmpty) return null;
+
+    if (isLightweightMode) return null;
+
+    if (useOptimizedStackTrace) {
+      try {
+        final trace = Trace.current(1);
+        if (trace.frames.isEmpty) return null;
+
+        final frame =
+            trace.frames.length > 1 ? trace.frames[1] : trace.frames[0];
+        return _extractTagFromUri(frame.uri);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    return null;
   }
 
   /// Basic stack trace extraction using string operations
@@ -213,7 +272,7 @@ class Dev {
   /// The lowest level threshold to execute the function [exeFinalFunc]
   /// Only logs at or above this level will trigger the final function
   /// Default is warn (executes for warn, error, and fatal levels)
-  static DevLevel exeLevel = DevLevel.warn;
+  static DevLevel exeLevel = DevLevel.info;
 
   /// The lowest level threshold to print logs to console
   /// Logs below this level will be filtered out and not displayed
@@ -229,12 +288,43 @@ class Dev {
   static String prefixName = '';
 
   /// Whether to replace newline characters and clean up whitespace for better search visibility in console
+  /// Defaults to true in debug mode (kDebugMode), false in release mode
   /// When true, newline characters are replaced with [newlineReplacement] string
-  static bool isReplaceNewline = false;
+  ///
+  /// Recommendation:
+  /// - Development: true (default in debug mode) for better console searchability
+  /// - Production: false (default in release mode) to preserve original formatting
+  static bool isReplaceNewline = kDebugMode;
 
   /// The replacement string for newline characters when [isReplaceNewline] is true
-  /// Default is ' | ' to maintain readability while keeping logs on a single line
-  static String newlineReplacement = ' | ';
+  /// Default is ' • ' (space + bullet + space) - a distinctive separator rarely seen in normal logs
+  /// The bullet point provides clear visual separation between content segments
+  static String newlineReplacement = ' • ';
+
+  /// Whether to show emoji indicators for log levels
+  /// Defaults to true in debug mode (kDebugMode), false in release mode
+  /// When true, displays emoji symbols like 🔍, 📬, 🎉, 🚧, ❌, 💣 for each log level
+  /// When false, hides emoji indicators and only shows text level names
+  ///
+  /// Recommendation:
+  /// - Development: true (default in debug mode) for better visual feedback
+  /// - Production: false (default in release mode) for cleaner logs and better compatibility
+  static bool isShowLevelEmojis = kDebugMode;
+
+  /// Whether to enable tag-based filtering
+  /// When false (default), all logs are displayed and tag information is shown
+  /// When true, only logs with tags matching [tags] set will be output to console
+  /// Note: Tag filtering only affects console output, [exeFinalFunc] is always executed regardless
+  static bool isFilterByTags = false;
+
+  /// Tag filtering for selective log output
+  /// Define the set of tags to display when [isFilterByTags] is enabled
+  /// When [isFilterByTags] is false, this set has no filtering effect (logs always display)
+  /// When [isFilterByTags] is true and this is not null/empty, only logs matching these tags are shown
+  /// - Tags can be automatically extracted from file path directory names
+  /// - Tags can be manually specified via the [tag] parameter in log calls
+  /// Note: Tag filtering only affects console output, [exeFinalFunc] is always executed regardless
+  static Set<String>? tags;
 
   static Map<DevLevel, int> get _logColorMap => {
         DevLevel.verbose: 90, // Dark gray for verbose
@@ -274,6 +364,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void log(
     String msg, {
     DevLevel level = DevLevel.normal,
@@ -290,6 +381,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     int ci = colorInt ??
         (_logColorMap[level] ??
@@ -298,6 +390,9 @@ class Dev {
         fileLocation != null ? '($fileLocation): ' : _getFileLocation();
     final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
     final theName = name ?? level.toString().split('.').last;
+
+    // Extract tag from stack trace if not provided
+    final effectiveTag = tag ?? _getTagFromStackTrace();
 
     DevColorizedLog.logCustom(
       msg,
@@ -318,6 +413,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -335,6 +431,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void print(Object? object,
       {String? name,
       DevLevel level = DevLevel.normal,
@@ -347,7 +444,8 @@ class Dev {
       StackTrace? stackTrace,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo =
         fileLocation != null ? '($fileLocation): ' : _getFileLocation();
     int ci = colorInt ??
@@ -360,6 +458,9 @@ class Dev {
     final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
     theName =
         '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
+
+    // Extract tag from stack trace if not provided
+    final effectiveTag = tag ?? _getTagFromStackTrace();
 
     DevColorizedLog.logCustom(
       msg,
@@ -378,6 +479,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -395,6 +497,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exe(String msg,
       {String? name,
       DevLevel level = DevLevel.normal,
@@ -407,7 +510,8 @@ class Dev {
       StackTrace? stackTrace,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     int ci = colorInt ?? (_exeColorMap[level] ?? 44);
     final String theFileInfo = fileInfo ?? _getFileLocation();
     bool isMult = isMultConsole != null && isMultConsole;
@@ -420,6 +524,9 @@ class Dev {
       theName =
           '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
     }
+
+    // Extract tag from stack trace if not provided
+    final effectiveTag = tag ?? _getTagFromStackTrace();
 
     DevColorizedLog.logCustom(
       msg,
@@ -438,6 +545,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -450,6 +558,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeVerbose(
     String msg, {
     bool? isLog,
@@ -459,6 +568,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -470,7 +580,8 @@ class Dev {
         level: DevLevel.verbose,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Execute info level log with custom final function
@@ -482,6 +593,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeInfo(
     String msg, {
     bool? isLog,
@@ -491,6 +603,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -502,7 +615,8 @@ class Dev {
         level: DevLevel.info,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Execute success level log with custom final function
@@ -514,6 +628,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeSuccess(
     String msg, {
     bool? isLog,
@@ -523,6 +638,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -534,7 +650,8 @@ class Dev {
         level: DevLevel.success,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Execute warn level log with custom final function
@@ -546,6 +663,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeWarn(
     String msg, {
     bool? isLog,
@@ -555,6 +673,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -566,7 +685,8 @@ class Dev {
         level: DevLevel.warn,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// @deprecated Use [exeWarn] instead. This will be removed in future versions.
@@ -579,6 +699,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   @Deprecated('Use exeWarn instead')
   static void exeWarning(
     String msg, {
@@ -589,6 +710,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     exeWarn(msg,
         isLog: isLog,
@@ -597,7 +719,8 @@ class Dev {
         colorInt: colorInt,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Execute error level log with custom final function
@@ -611,6 +734,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeError(
     String msg, {
     bool? isLog,
@@ -622,6 +746,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -635,7 +760,8 @@ class Dev {
         stackTrace: stackTrace,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Execute fatal level log with custom final function
@@ -647,6 +773,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void exeFatal(
     String msg, {
     bool? isLog,
@@ -656,6 +783,7 @@ class Dev {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     final String fileInfo = _getFileLocation();
     Dev.exe(msg,
@@ -667,7 +795,8 @@ class Dev {
         level: DevLevel.fatal,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Verbose - Dark gray text for detailed debug information
@@ -678,13 +807,16 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logVerbose(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.verbose,
@@ -699,6 +831,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -710,13 +843,16 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logFatal(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.fatal,
@@ -731,6 +867,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -741,13 +878,16 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logInfo(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.info,
@@ -762,6 +902,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -772,13 +913,16 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logSuccess(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.success,
@@ -793,6 +937,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -803,13 +948,16 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logWarn(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.warn,
@@ -825,6 +973,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 
@@ -836,19 +985,22 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   @Deprecated('Use logWarn instead')
   static void logWarning(String msg,
       {bool? isLog,
       bool? execFinalFunc,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     logWarn(msg,
         isLog: isLog,
         execFinalFunc: execFinalFunc,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
-        debounceKey: debounceKey);
+        debounceKey: debounceKey,
+        tag: tag);
   }
 
   /// Error - Red text for error messages
@@ -860,6 +1012,7 @@ class Dev {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
   static void logError(String msg,
       {bool? isLog,
       bool? execFinalFunc,
@@ -867,8 +1020,10 @@ class Dev {
       StackTrace? stackTrace,
       String? printOnceIfContains,
       int debounceMs = 0,
-      String? debounceKey}) {
+      String? debounceKey,
+      String? tag}) {
     final String fileInfo = _getFileLocation();
+    final effectiveTag = tag ?? _getTagFromStackTrace();
     DevColorizedLog.logCustom(
       msg,
       devLevel: DevLevel.error,
@@ -886,6 +1041,7 @@ class Dev {
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
       debounceKey: debounceKey,
+      tag: effectiveTag,
     );
   }
 }

@@ -8,6 +8,7 @@ A powerful and flexible Flutter/Dart logging utility with colorized console outp
 
 - **🎨 Colorized Output**: 7 log levels with distinct ANSI colors (verbose, normal, info, success, warn, error, fatal)
 - **🔍 Smart Filtering**: Dual-level filtering with `logLevel` (console output) and `exeLevel` (custom callbacks)
+- **🏷️ Tag-Based Filtering**: Filter logs by module/feature tags for focused debugging and modular development
 - **⚡ Performance Optimized**: Lightweight mode and optimized stack trace parsing (40-60% faster) for production use
 - **🚫 Debounce & Deduplication**: Prevent log spam with `debounceMs` and one-time logging with `printOnceIfContains`
 - **📍 File Location Tracking**: Automatic file name and line number detection for quick debugging
@@ -48,6 +49,101 @@ Dev.logWarn('Deprecated API used'); // Console: ✓ shown, Callback: filtered (b
 Dev.logError('Network error'); // Console: ✓ shown, Callback: ✓ executed
 Dev.logFatal('Critical failure!'); // Console: ✓ shown, Callback: ✓ executed
 
+/// V 2.2.0 Emoji display control for log levels
+/// Control whether to show emoji indicators in log output
+/// Defaults to true in debug mode (kDebugMode), false in release mode
+Dev.isShowLevelEmojis = true; // Show emojis (default in debug mode)
+Dev.isShowLevelEmojis = false; // Hide emojis (default in release mode)
+
+// Example with emojis enabled (default in debug mode):
+Dev.logVerbose('Debug info'); // Output: [🔍:verbose]...
+Dev.logInfo('Information'); // Output: [📬:info]...
+Dev.logSuccess('Success!'); // Output: [🎉:success]...
+Dev.logWarn('Warning'); // Output: [🚧:warn]...
+Dev.logError('Error'); // Output: [❌:error]...
+Dev.logFatal('Critical!'); // Output: [💣:fatal]...
+
+// Example with emojis disabled (default in release mode):
+Dev.isShowLevelEmojis = false;
+Dev.logInfo('Information'); // Output: [info]...
+Dev.logError('Error'); // Output: [error]...
+
+// Recommendation:
+// - Development: true (default in debug mode) for better visual feedback
+// - Production: false (default in release mode) for cleaner logs and better compatibility
+
+/// V 2.2.0 Tag-based filtering for modular development and focused debugging
+/// Filter logs by tags to show only logs from specific modules or features
+/// Tags can be auto-detected from file path or manually specified per log
+Dev.isFilterByTags = false; // Default: show all logs with tag information displayed
+Dev.tags = null; // Default: no tags defined
+
+// Step 1: Show tag information without filtering (default behavior)
+Dev.isFilterByTags = false; // Filtering disabled - all logs shown
+Dev.tags = {'auth', 'network'}; // Optional: define available tags for reference
+
+// All logs are displayed with their tag information
+Dev.logInfo('User logged in successfully', tag: 'auth'); // ✓ Shown with [tag:auth]
+Dev.logInfo('API call started', tag: 'network'); // ✓ Shown with [tag:network]
+Dev.logInfo('Cache updated', tag: 'database'); // ✓ Shown with [tag:database]
+Dev.logInfo('Untagged log'); // ✓ Shown without tag
+
+// Step 2: Enable tag filtering - only show logs with matching tags
+Dev.isFilterByTags = true; // Enable filtering
+Dev.tags = {'auth', 'network'}; // Only show logs tagged with 'auth' or 'network'
+
+// Manual tag specification - specify tag per log call
+Dev.logInfo('User logged in successfully', tag: 'auth'); // ✓ Shown (matches 'auth' tag)
+Dev.logInfo('API call started', tag: 'network'); // ✓ Shown (matches 'network' tag)
+Dev.logInfo('Cache updated', tag: 'database'); // ✗ Hidden (tag doesn't match)
+Dev.logInfo('Untagged log'); // ✗ Hidden (no tag provided)
+
+// Auto-detection from file path (directory names in path checked against Dev.tags)
+// Example: If log is from lib/features/auth/login.dart
+// And Dev.tags = {'features', 'auth'}, the tag 'features' or 'auth' will be auto-detected
+Dev.logInfo('Auto-detected tag from file path'); // Tag auto-extracted from path
+
+// Practical example: Debug only payment feature
+Dev.isFilterByTags = true;
+Dev.tags = {'payment'};
+Dev.logInfo('Initiating transaction', tag: 'payment'); // ✓ Shown
+Dev.logInfo('Contacting payment gateway', tag: 'network'); // ✗ Hidden
+Dev.logSuccess('Transaction completed', tag: 'payment'); // ✓ Shown
+
+// Development environment: Focus on debug and test logs
+Dev.isFilterByTags = true;
+Dev.tags = {'debug', 'test'};
+Dev.logVerbose('Variable state = loading', tag: 'debug'); // ✓ Shown
+Dev.logInfo('Running integration test', tag: 'test'); // ✓ Shown
+Dev.logInfo('Analytics event tracked', tag: 'analytics'); // ✗ Hidden
+
+// Important: Tag filtering only affects console output
+// exeFinalFunc callback will ALWAYS execute regardless of tag matching
+Dev.isFilterByTags = true;
+Dev.tags = {'critical'};
+Dev.exeError('Critical error', tag: 'critical'); // ✓ Console shown + callback executed
+Dev.exeWarn('Normal warning', tag: 'normal'); // ✗ Console hidden BUT callback still executed
+
+// Disable tag filtering
+Dev.isFilterByTags = false; // Show all logs with tag information
+// or
+Dev.tags = null; // Clear tags
+
+// All log/print/exe methods support the optional 'tag' parameter:
+Dev.log('Message', tag: 'mytag');
+Dev.print('Message', tag: 'mytag');
+Dev.exe('Message', tag: 'mytag');
+Dev.logInfo('Message', tag: 'mytag');
+Dev.logSuccess('Message', tag: 'mytag');
+Dev.logWarn('Message', tag: 'mytag');
+Dev.logError('Message', tag: 'mytag');
+Dev.logFatal('Message', tag: 'mytag');
+Dev.exeInfo('Message', tag: 'mytag');
+Dev.exeSuccess('Message', tag: 'mytag');
+Dev.exeWarn('Message', tag: 'mytag');
+Dev.exeError('Message', tag: 'mytag');
+Dev.exeFatal('Message', tag: 'mytag');
+
 /// V 2.0.9 debounceMs + debounceKey for throttling rapid log calls
 /// Use the debounceMs parameter to prevent log spam from repeated calls
 /// Use debounceKey when the log message contains dynamic content (timestamps, counters, etc.)
@@ -59,15 +155,32 @@ Dev.clearDebounceTimestamps(); // Clear all debounce states if needed
 Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
 Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
 
+/// V 2.2.0 Fast print mode for better console output performance
+/// Defaults to true in debug mode (kDebugMode), false in release mode
+Dev.useFastPrint = true; // Use print() instead of debugPrint() for faster output (default in debug mode)
+Dev.useFastPrint = false; // Use debugPrint() for safer logging with throttling (default in release mode)
+// Note: debugPrint throttles output (~800 chars at a time) to prevent log loss
+//       print is faster but may lose logs if output is too frequent
+//
+// Recommendation:
+// - Development: true (default in debug mode) for faster feedback
+// - Production/Testing: false (default in release mode) for safer logging
+
 /// V 2.0.7 printOnceIfContains for one-time logging when the message contains a keyword
 /// Use the printOnceIfContains parameter to ensure only the first log containing the keyword is printed
 Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
 Dev.log('Retry: USER-001 timeout again', printOnceIfContains: 'USER-001'); // Skipped! (message contains 'USER-001' which was already logged)
 Dev.clearCachedKeys(); // Clear all cached keywords if needed
 
-/// V 2.0.4 newline replacement for better search visibility in the console
-Dev.isReplaceNewline = true; // Whether to replace newline characters (default: false)
-Dev.newlineReplacement = ' | '; // Replacement string for newlines (default: ' | ')
+/// V 2.2.0 newline replacement for better search visibility in the console
+/// Defaults to true in debug mode (kDebugMode), false in release mode
+Dev.isReplaceNewline = true; // Replace newlines (default: true in debug mode)
+Dev.isReplaceNewline = false; // Preserve newlines (default: false in release mode)
+Dev.newlineReplacement = ' • '; // Replacement string (default: ' • ' - bullet point for clear separation)
+
+// Recommendation:
+// - Development: true (default in debug mode) for better console searchability
+// - Production: false (default in release mode) to preserve original formatting
 
 /// V 2.0.3 prefix name for all logs
 Dev.prefixName = 'MyApp'; // Custom prefix name to prepend to all log messages
@@ -277,7 +390,7 @@ const errorDetails = '''Error occurred:
 
 // With replacement enabled (better for searching in console):
 Dev.logError(errorDetails);
-// Output: Error occurred: | - File: user.dart:123 | - Function: validateEmail() | - Reason: Invalid format
+// Output: Error occurred: • - File: user.dart:123 • - Function: validateEmail() • - Reason: Invalid format
 
 // Example with messy whitespace:
 const messyLog = '''  Error:
@@ -286,7 +399,7 @@ const messyLog = '''  Error:
 
 // With replacement enabled - automatically cleans up extra whitespace:
 Dev.logError(messyLog);
-// Output: Error: | Multiple spaces and tabs | End with spaces
+// Output: Error: • Multiple spaces and tabs • End with spaces
 
 // Without replacement (preserves original formatting):
 Dev.isReplaceNewline = false;

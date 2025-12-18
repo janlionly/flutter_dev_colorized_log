@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:dev_colorized_log/dev_colorized_log.dart';
 
+import 'tag_demo_page.dart';
+
 void main() {
   Dev.enable = true;
   Dev.isMultConsoleLog = true;
@@ -10,6 +12,7 @@ void main() {
   Dev.isLogFileLocation = true;
   Dev.isExeDiffColor = false;
   Dev.prefixName = 'MyApp-';
+  Dev.isShowLevelEmojis = false;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     Dev.logError('dev_colorized_log:',
@@ -182,9 +185,44 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.isExeWithShowLog = true;
     Dev.isExeWithDateTime = false;
 
-    /// V 2.0.4 newline replacement for better search visibility
-    Dev.isReplaceNewline = true; // default is false
-    Dev.newlineReplacement = ' | '; // default is ' | '
+    /// Performance optimization: Use fast print mode for faster console output
+    /// Defaults to true in debug mode (kDebugMode), false in release mode
+    /// Set to true to use print() instead of debugPrint() - faster but may lose logs
+    /// Set to false to use debugPrint() - slower but safer
+    // Dev.useFastPrint = true; // Override default if needed (defaults to true in debug mode)
+
+    /// V 2.2.0 Emoji display control demo
+    /// Defaults to true in debug mode, false in release mode
+    Dev.log(
+        '===================== Emoji Display Control Demo =====================');
+
+    // With emojis (default in debug mode)
+    Dev.isShowLevelEmojis = true;
+    Dev.log('--- With Emojis Enabled (default in debug mode) ---');
+    Dev.logVerbose('Verbose log with emoji');
+    Dev.logInfo('Info log with emoji');
+    Dev.logSuccess('Success log with emoji');
+    Dev.logWarn('Warning log with emoji');
+    Dev.logError('Error log with emoji');
+    Dev.logFatal('Fatal log with emoji');
+
+    // Without emojis (default in release mode)
+    Dev.isShowLevelEmojis = false;
+    Dev.log('--- With Emojis Disabled (default in release mode) ---');
+    Dev.logVerbose('Verbose log without emoji');
+    Dev.logInfo('Info log without emoji');
+    Dev.logSuccess('Success log without emoji');
+    Dev.logWarn('Warning log without emoji');
+    Dev.logError('Error log without emoji');
+    Dev.logFatal('Fatal log without emoji');
+
+    // Reset to default (with emojis)
+    Dev.isShowLevelEmojis = true;
+
+    /// V 2.2.0 newline replacement for better search visibility
+    /// Defaults to true in debug mode (kDebugMode), false in release mode
+    // Dev.isReplaceNewline = true; // default is true in debug mode
+    // Dev.newlineReplacement = ' | '; // Override default (' → ') for this demo
 
     Dev.log(
         '===================== Newline Replacement Demo =====================');
@@ -213,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
         'Multi-line warning with custom replacement:\n$multiLineExample');
 
     // Reset to default
-    Dev.newlineReplacement = ' | ';
+    Dev.newlineReplacement = ' • ';
 
     /// V 1.2.8 colorize multi lines
     Dev.log('===================== Multi lines log =====================');
@@ -273,6 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Future<void>.delayed(const Duration(seconds: 4), () => debounceDemo());
     Future<void>.delayed(
         const Duration(seconds: 5), () => logLevelFilterDemo());
+    Future<void>.delayed(const Duration(seconds: 6), () => tagFilterDemo());
   }
 
   void logLevelFilterDemo() {
@@ -484,6 +523,148 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.exeSuccess('3.log success level and exec');
   }
 
+  void tagFilterDemo() {
+    Dev.log(
+        '==========================Tag Filter Demo========================');
+
+    Dev.log('📌 Demo: Tag-based log filtering for modular development');
+    Dev.log('   Dev.isFilterByTags = controls whether to filter by tags');
+    Dev.log(
+        '   Dev.tags = defines which tags to display (when filtering enabled)');
+    Dev.log(
+        '   Tags can be auto-detected from file path or manually specified');
+
+    // Demo 1: Default behavior - show all logs with tag information
+    Dev.isFilterByTags = false;
+    Dev.tags = null;
+    Dev.log('--- Demo 1: Default (isFilterByTags = false, show all) ---');
+    Dev.logInfo('📦 Log from auth module', tag: 'auth');
+    Dev.logInfo('🌐 Log from network module', tag: 'network');
+    Dev.logInfo('💾 Log from database module', tag: 'database');
+    Dev.logInfo('🎨 Log from ui module', tag: 'ui');
+    Dev.logInfo('📝 Log without tag');
+
+    // Demo 2: Show tag info without filtering
+    Dev.isFilterByTags = false;
+    Dev.tags = {'auth', 'network'}; // Define tags but don't filter
+    Dev.log(
+        '--- Demo 2: Tag info shown, no filtering (isFilterByTags = false) ---');
+    Dev.logInfo('📦 Auth: User info (shown with [tag:auth])', tag: 'auth');
+    Dev.logInfo('🌐 Network: API call (shown with [tag:network])',
+        tag: 'network');
+    Dev.logInfo('💾 Database: Query (shown with [tag:database])',
+        tag: 'database');
+    Dev.logInfo('📝 Untagged log (shown without tag)');
+
+    // Demo 3: Enable filtering - single tag
+    Dev.isFilterByTags = true;
+    Dev.tags = {'auth'};
+    Dev.log(
+        '--- Demo 3: Filter single tag (isFilterByTags = true, tags = {\'auth\'}) ---');
+    Dev.logSuccess('✅ Auth: User logged in successfully', tag: 'auth');
+    Dev.logInfo('🌐 Network: API call (HIDDEN)', tag: 'network');
+    Dev.logInfo('💾 Database: Query executed (HIDDEN)', tag: 'database');
+    Dev.logWarn('⚠️ Auth: Session about to expire', tag: 'auth');
+    Dev.logInfo('📝 Untagged log (HIDDEN)');
+
+    // Demo 4: Enable filtering - multiple tags
+    Dev.isFilterByTags = true;
+    Dev.tags = {'auth', 'network'};
+    Dev.log('--- Demo 4: Filter multiple tags (show "auth" and "network") ---');
+    Dev.logSuccess('✅ Auth: Login successful', tag: 'auth');
+    Dev.logInfo('🌐 Network: Fetching user data', tag: 'network');
+    Dev.logInfo('💾 Database: Saving to cache (HIDDEN)', tag: 'database');
+    Dev.logSuccess('🌐 Network: API response received', tag: 'network');
+    Dev.logError('❌ Auth: Invalid credentials', tag: 'auth');
+
+    // Demo 5: Practical example - debugging specific feature
+    Dev.isFilterByTags = true;
+    Dev.tags = {'payment'};
+    Dev.log('--- Demo 5: Debug payment feature only ---');
+    Dev.logInfo('💳 Payment: Initiating transaction', tag: 'payment');
+    Dev.logInfo('🌐 Network: Contacting payment gateway (HIDDEN)',
+        tag: 'network');
+    Dev.logSuccess('💳 Payment: Transaction verified', tag: 'payment');
+    Dev.logInfo('💾 Database: Saving receipt (HIDDEN)', tag: 'database');
+    Dev.logSuccess('💳 Payment: Receipt generated', tag: 'payment');
+
+    // Demo 6: Tag filtering with different log levels
+    Dev.isFilterByTags = true;
+    Dev.tags = {'security'};
+    Dev.log('--- Demo 6: Security logs with different levels ---');
+    Dev.logVerbose('🔒 Security: Checking permissions', tag: 'security');
+    Dev.logInfo('🔒 Security: User authenticated', tag: 'security');
+    Dev.logWarn('⚠️ Security: Suspicious activity detected', tag: 'security');
+    Dev.logError('❌ Security: Unauthorized access attempt', tag: 'security');
+    Dev.logFatal('💣 Security: Critical breach detected', tag: 'security');
+    Dev.logInfo('📱 UI: Screen loaded (HIDDEN)', tag: 'ui');
+
+    // Demo 7: Auto-detection from file path simulation
+    Dev.isFilterByTags = true;
+    Dev.tags = {'features', 'services'};
+    Dev.log('--- Demo 7: Auto-detection from file path ---');
+    Dev.log(
+        'Imagine these logs come from: lib/features/user/user_service.dart');
+    Dev.log(
+        'The tag "features" would be auto-detected and shown if in Dev.tags');
+    Dev.logInfo('👤 Processing user data', tag: 'features');
+    Dev.logInfo('🔧 Service initialized', tag: 'services');
+    Dev.logInfo('🎨 Rendering UI (HIDDEN)', tag: 'ui');
+
+    // Demo 8: Empty tag set - hides everything when filtering enabled
+    Dev.isFilterByTags = true;
+    Dev.tags = {};
+    Dev.log('--- Demo 8: Empty tag set (tags = {}, hide all with tags) ---');
+    Dev.logInfo('All these logs have tags, so they are HIDDEN', tag: 'hidden');
+    Dev.logInfo('This one too', tag: 'hidden');
+    Dev.logInfo('And this one', tag: 'hidden');
+
+    // Demo 9: Combining with execFinalFunc
+    Dev.isFilterByTags = true;
+    Dev.tags = {'critical'};
+    Dev.log('--- Demo 9: Tag filter + execFinalFunc (still executes) ---');
+    Dev.log('Tag filtering only affects console output');
+    Dev.log('execFinalFunc will execute regardless of tag matching');
+    Dev.exeError('💥 Critical error logged to remote server',
+        tag: 'critical'); // Shown + executed
+    Dev.exeWarn('⚠️ Normal warning (HIDDEN in console but callback executed)',
+        tag: 'normal'); // Hidden but callback still runs
+    Dev.exeError('❌ Another critical error',
+        tag: 'critical'); // Shown + executed
+
+    // Demo 10: Practical use case - development environment
+    Dev.isFilterByTags = true;
+    Dev.tags = {'debug', 'test'};
+    Dev.log('--- Demo 10: Development environment debugging ---');
+    Dev.logVerbose('🔍 Debug: Variable state = loading', tag: 'debug');
+    Dev.logInfo('🧪 Test: Running integration test', tag: 'test');
+    Dev.logInfo('📊 Analytics: Event tracked (HIDDEN)', tag: 'analytics');
+    Dev.logVerbose('🔍 Debug: Response time = 124ms', tag: 'debug');
+    Dev.logSuccess('✅ Test: All tests passed', tag: 'test');
+
+    // Demo 11: Real-world scenario - monitoring specific module
+    Dev.isFilterByTags = true;
+    Dev.tags = {'api', 'cache'};
+    Dev.log('--- Demo 11: Monitor API and cache performance ---');
+    Dev.logInfo('🌐 API: GET /users/123', tag: 'api');
+    Dev.logInfo('💾 Cache: Checking cache for key:user:123', tag: 'cache');
+    Dev.logInfo('💾 Cache: Cache miss', tag: 'cache');
+    Dev.logInfo('🌐 API: Response received (200ms)', tag: 'api');
+    Dev.logInfo('💾 Cache: Storing result with TTL 300s', tag: 'cache');
+    Dev.logInfo('🎨 UI: Updating user profile (HIDDEN)', tag: 'ui');
+
+    // Reset to default (no filtering)
+    Dev.isFilterByTags = false;
+    Dev.tags = null;
+    Dev.log('--- Reset: Tag filtering disabled (isFilterByTags = false) ---');
+    Dev.logInfo('✅ All logs now visible again', tag: 'any');
+    Dev.logInfo('✅ Regardless of tag', tag: 'tag');
+    Dev.logInfo('✅ Or no tag at all');
+
+    Dev.log(
+        '==========================Tag Filter Demo End====================');
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -502,6 +683,18 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.label),
+            tooltip: 'Tag Demo',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TagDemoPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it

@@ -52,6 +52,7 @@ class DevColorizedLog {
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [Dev.isFilterByTags] is true, only logs with tags matching [Dev.tags] are displayed
   static void logCustom(
     String msg, {
     required DevLevel devLevel,
@@ -72,6 +73,7 @@ class DevColorizedLog {
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
+    String? tag,
   }) {
     // Check debounce - if in debounce period, skip this log
     // Priority: use debounceKey if provided, otherwise fallback to msg|devLevel|name
@@ -109,6 +111,7 @@ class DevColorizedLog {
       error: error,
       stackTrace: stackTrace,
       execFinalFunc: execFinalFunc,
+      tag: tag,
     );
   }
 
@@ -129,13 +132,23 @@ class DevColorizedLog {
     Object? error,
     StackTrace? stackTrace,
     bool? execFinalFunc,
+    String? tag,
   }) {
     bool isExe = execFinalFunc != null && execFinalFunc;
-    name = '${levelEmojis[devLevel]}:${Dev.prefixName}$name';
+    // Add emoji prefix if enabled
+    final emojiPrefix =
+        Dev.isShowLevelEmojis ? '${levelEmojis[devLevel]}:' : '';
+    name = '$emojiPrefix${Dev.prefixName}$name';
     // Since enum names no longer have 'log' prefix, directly append '&exe' for execution mode
     final finalName = isExe ? '$name&exe' : name;
-    DateTime now = DateTime.now();
-    String formattedNow = Dev.isLogShowDateTime ? '$now' : '';
+
+    // Format tag prefix - display tag before datetime if tag is not null and not empty
+    String tagPrefix = '';
+    if (tag != null && tag.isNotEmpty) {
+      tagPrefix = '[tag:$tag]';
+    }
+
+    String formattedNow = Dev.isLogShowDateTime ? '${DateTime.now()}' : '';
 
     if (error != null) {
       msg = '$msg\n${_errorMessage(error, stackTrace, dateTime: formattedNow)}';
@@ -151,22 +164,37 @@ class DevColorizedLog {
         return; // Skip this log - level below threshold
       }
 
+      // Check tag filter - skip if filtering is enabled and current tag doesn't match
+      // Only filter when Dev.isFilterByTags is true and Dev.tags is set
+      // If Dev.isFilterByTags is false, all logs are displayed regardless of tags
+      // If Dev.isFilterByTags is true and Dev.tags is set, only allow logs where:
+      //   1. tag is provided and exists in Dev.tags
+      //   2. tag is null (auto-detection failed or not applicable) - these are filtered out
+      if (Dev.isFilterByTags && Dev.tags != null && Dev.tags!.isNotEmpty) {
+        if (tag == null || !Dev.tags!.contains(tag)) {
+          return; // Skip this log - tag doesn't match filter
+        }
+      }
+
       // Process newlines for better search visibility
       final processedMsg = _processNewlines(msg);
 
       if ((isMultConsole != null && isMultConsole == true) ||
           Dev.isMultConsoleLog) {
-        if (isDebugPrint == null || isDebugPrint) {
-          debugPrint(
-              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m');
-        } else {
+        // Use fast print mode if enabled, otherwise respect isDebugPrint setting
+        final shouldUsePrint = Dev.useFastPrint || isDebugPrint == false;
+
+        if (shouldUsePrint) {
           // ignore: avoid_print
           print(
-              '\x1B[${colorInt}m[$finalName]$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m');
+              '\x1B[${colorInt}m[$finalName]$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m');
+        } else {
+          debugPrint(
+              '\x1B[${colorInt}m[$finalName]$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m');
         }
       } else {
         dev.log(
-          '\x1B[${colorInt}m$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m',
+          '\x1B[${colorInt}m$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg, colorInt)}\x1B[0m',
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
@@ -200,7 +228,7 @@ class DevColorizedLog {
           _isExecutingFinalFunc = true;
           try {
             finalFunc.call(
-                '[$finalName]${Dev.isExeWithDateTime ? '$now' : ''}${fileInfo ?? ''}$callbackMsg',
+                '[$finalName]$tagPrefix${Dev.isExeWithDateTime ? formattedNow : ''}${fileInfo ?? ''}$callbackMsg',
                 devLevel);
           } finally {
             _isExecutingFinalFunc = false;

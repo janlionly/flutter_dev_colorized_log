@@ -1,3 +1,15 @@
+## [2.2.0] - 18 Dec 2025
+
+**New Features:**
+* Added `Dev.isShowLevelEmojis` to control emoji display in logs (defaults to true in debug mode, false in release mode)
+* Added tag-based filtering system with `Dev.isFilterByTags` and `Dev.tags` for modular development
+  - Tags can be auto-detected from file path or manually specified via `tag` parameter
+  - Filtering only affects console output; `exeFinalFunc` always executes
+* Added `Dev.useFastPrint` for performance optimization (defaults to true in debug mode, false in release mode)
+* Updated `Dev.isReplaceNewline` to default based on kDebugMode (true in debug, false in release)
+* Changed `Dev.newlineReplacement` default from ` | ` to ` • ` (bullet point) for better visibility and clear separation semantics
+* Optimized tag extraction to skip stack trace capture when tags not configured
+
 ## [2.1.1] - 12 Dec 2025
 
 * Docs: Reworked README with detailed feature breakdowns, richer examples, and clearer guidance on log filtering, debouncing, and customization options.
