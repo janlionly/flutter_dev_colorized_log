@@ -29,25 +29,12 @@ Dev.isLogFileLocation = true; // Whether to log the file location info
 Dev.defaultColorInt = 0; // Default text color, int value from 0 to 107
 Dev.isDebugPrint = true; // Whether Dev.print logs only in debug mode
 
-/// V 2.1.0 Log level filtering - control which logs are printed to the console
-/// Set the minimum log level threshold - logs below this level will be filtered from the console
-/// Note: logLevel only filters console output, exeFinalFunc callbacks still execute for all levels
-Dev.logLevel = DevLevel.verbose; // Default: show all logs in the console
-Dev.logLevel = DevLevel.info; // Console: only show info, success, warning, error, and fatal
-Dev.logLevel = DevLevel.warn; // Console: only show warning, error, and fatal
-Dev.logLevel = DevLevel.error; // Console: only show error and fatal
-
-// Example: Production environment - only show warnings and above in the console
-Dev.logLevel = DevLevel.warn;
-Dev.exeLevel = DevLevel.error; // Only error+ will trigger exeFinalFunc
-
-Dev.logVerbose('Debug details'); // Console: filtered, Callback: filtered
-Dev.log('Normal log'); // Console: filtered, Callback: filtered
-Dev.logInfo('API response received'); // Console: filtered, Callback: filtered
-Dev.logSuccess('Task completed'); // Console: filtered, Callback: filtered
-Dev.logWarn('Deprecated API used'); // Console: ✓ shown, Callback: filtered (below exeLevel)
-Dev.logError('Network error'); // Console: ✓ shown, Callback: ✓ executed
-Dev.logFatal('Critical failure!'); // Console: ✓ shown, Callback: ✓ executed
+/// V 2.2.1 Automatic memory management for debounce cache
+/// Configure automatic cleanup to prevent unbounded memory growth in long-running applications
+Dev.maxDebounceEntries = 1000; // Maximum debounce entries to keep (default: 1000)
+Dev.debounceCleanupCount = 100; // Number of oldest entries to remove when limit is exceeded (default: 100)
+// Set maxDebounceEntries to 0 or negative to disable automatic cleanup (unlimited entries)
+Dev.maxDebounceEntries = 0; // Disable automatic cleanup
 
 /// V 2.2.0 Emoji display control for log levels
 /// Control whether to show emoji indicators in log output
@@ -144,17 +131,6 @@ Dev.exeWarn('Message', tag: 'mytag');
 Dev.exeError('Message', tag: 'mytag');
 Dev.exeFatal('Message', tag: 'mytag');
 
-/// V 2.0.9 debounceMs + debounceKey for throttling rapid log calls
-/// Use the debounceMs parameter to prevent log spam from repeated calls
-/// Use debounceKey when the log message contains dynamic content (timestamps, counters, etc.)
-Dev.logWarning('Button clicked', debounceMs: 2000); // Only logs once every 2 seconds
-Dev.logInfo('API call at ${DateTime.now()}', debounceMs: 1000, debounceKey: 'api_call'); // Logs with dynamic content
-Dev.clearDebounceTimestamps(); // Clear all debounce states if needed
-
-/// V 2.0.8 Performance optimization options
-Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
-Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
-
 /// V 2.2.0 Fast print mode for better console output performance
 /// Defaults to true in debug mode (kDebugMode), false in release mode
 Dev.useFastPrint = true; // Use print() instead of debugPrint() for faster output (default in debug mode)
@@ -166,12 +142,6 @@ Dev.useFastPrint = false; // Use debugPrint() for safer logging with throttling 
 // - Development: true (default in debug mode) for faster feedback
 // - Production/Testing: false (default in release mode) for safer logging
 
-/// V 2.0.7 printOnceIfContains for one-time logging when the message contains a keyword
-/// Use the printOnceIfContains parameter to ensure only the first log containing the keyword is printed
-Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
-Dev.log('Retry: USER-001 timeout again', printOnceIfContains: 'USER-001'); // Skipped! (message contains 'USER-001' which was already logged)
-Dev.clearCachedKeys(); // Clear all cached keywords if needed
-
 /// V 2.2.0 newline replacement for better search visibility in the console
 /// Defaults to true in debug mode (kDebugMode), false in release mode
 Dev.isReplaceNewline = true; // Replace newlines (default: true in debug mode)
@@ -181,6 +151,43 @@ Dev.newlineReplacement = ' • '; // Replacement string (default: ' • ' - bull
 // Recommendation:
 // - Development: true (default in debug mode) for better console searchability
 // - Production: false (default in release mode) to preserve original formatting
+
+/// V 2.1.0 Log level filtering - control which logs are printed to the console
+/// Set the minimum log level threshold - logs below this level will be filtered from the console
+/// Note: logLevel only filters console output, exeFinalFunc callbacks still execute for all levels
+Dev.logLevel = DevLevel.verbose; // Default: show all logs in the console
+Dev.logLevel = DevLevel.info; // Console: only show info, success, warning, error, and fatal
+Dev.logLevel = DevLevel.warn; // Console: only show warning, error, and fatal
+Dev.logLevel = DevLevel.error; // Console: only show error and fatal
+
+// Example: Production environment - only show warnings and above in the console
+Dev.logLevel = DevLevel.warn;
+Dev.exeLevel = DevLevel.error; // Only error+ will trigger exeFinalFunc
+
+Dev.logVerbose('Debug details'); // Console: filtered, Callback: filtered
+Dev.log('Normal log'); // Console: filtered, Callback: filtered
+Dev.logInfo('API response received'); // Console: filtered, Callback: filtered
+Dev.logSuccess('Task completed'); // Console: filtered, Callback: filtered
+Dev.logWarn('Deprecated API used'); // Console: ✓ shown, Callback: filtered (below exeLevel)
+Dev.logError('Network error'); // Console: ✓ shown, Callback: ✓ executed
+Dev.logFatal('Critical failure!'); // Console: ✓ shown, Callback: ✓ executed
+
+/// V 2.0.9 debounceMs + debounceKey for throttling rapid log calls
+/// Use the debounceMs parameter to prevent log spam from repeated calls
+/// Use debounceKey when the log message contains dynamic content (timestamps, counters, etc.)
+Dev.logWarning('Button clicked', debounceMs: 2000); // Only logs once every 2 seconds
+Dev.logInfo('API call at ${DateTime.now()}', debounceMs: 1000, debounceKey: 'api_call'); // Logs with dynamic content
+Dev.clearDebounceTimestamps(); // Clear all debounce states if needed
+
+/// V 2.0.8 Performance optimization options
+Dev.isLightweightMode = false; // Skip stack trace capture for maximum performance (recommended for production)
+Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better performance (default: true)
+
+/// V 2.0.7 printOnceIfContains for one-time logging when the message contains a keyword
+/// Use the printOnceIfContains parameter to ensure only the first log containing the keyword is printed
+Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
+Dev.log('Retry: USER-001 timeout again', printOnceIfContains: 'USER-001'); // Skipped! (message contains 'USER-001' which was already logged)
+Dev.clearCachedKeys(); // Clear all cached keywords if needed
 
 /// V 2.0.3 prefix name for all logs
 Dev.prefixName = 'MyApp'; // Custom prefix name to prepend to all log messages
@@ -511,6 +518,26 @@ Dev.clearDebounceTimestamps(); // Reset all debounce states
 Dev.logInfo('Loop iteration 0',
     debounceMs: 500,
     debounceKey: 'loop_log'); // ✓ Now logs again
+
+// Example 7: Memory management for debounce cache (v2.2.1+)
+// Configure automatic cleanup to prevent memory issues in long-running apps
+Dev.maxDebounceEntries = 500; // Keep max 500 entries (default: 1000)
+Dev.debounceCleanupCount = 50; // Remove 50 oldest entries when limit exceeded (default: 100)
+
+// When the cache exceeds maxDebounceEntries, the oldest entries are automatically removed
+// For example, if you have a long-running app with many different debounce keys:
+for (int i = 0; i < 600; i++) {
+  Dev.logInfo('Event $i', debounceMs: 5000, debounceKey: 'event_$i');
+}
+// After 500 entries, the oldest 50 are automatically cleaned up
+// This keeps memory usage bounded while maintaining debounce functionality
+
+// Disable automatic cleanup for unlimited entries (not recommended for production)
+Dev.maxDebounceEntries = 0; // No limit, cache can grow indefinitely
+
+// Reset to default values
+Dev.maxDebounceEntries = 1000;
+Dev.debounceCleanupCount = 100;
 
 // Important: When to use debounceKey
 // ✓ Use debounceKey when the message contains dynamic content:

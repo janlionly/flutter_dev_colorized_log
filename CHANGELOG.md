@@ -1,3 +1,13 @@
+## [2.2.1] - 22 Dec 2025
+
+**New Features:**
+* Added automatic memory management for debounce cache to prevent unbounded memory growth in long-running applications
+* Added `Dev.maxDebounceEntries` (default: 1000) - maximum number of debounce entries to keep in memory
+* Added `Dev.debounceCleanupCount` (default: 100) - number of oldest entries to remove when limit is exceeded
+* When debounce cache exceeds `maxDebounceEntries`, the oldest `debounceCleanupCount` entries are automatically cleaned up
+* Set `maxDebounceEntries` to 0 or negative to disable automatic cleanup (unlimited entries)
+* Added comprehensive test suite (12 tests) to verify memory cleanup functionality and edge cases
+
 ## [2.2.0] - 18 Dec 2025
 
 **New Features:**

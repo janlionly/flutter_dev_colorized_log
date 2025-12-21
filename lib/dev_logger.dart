@@ -202,6 +202,17 @@ class Dev {
     _cachedKeys.clear();
   }
 
+  /// Maximum number of debounce entries to keep in memory
+  /// When this limit is exceeded, the oldest entries will be automatically cleaned up
+  /// Set to 0 or negative value to disable automatic cleanup (unlimited entries)
+  /// Default is 1000 entries
+  static int maxDebounceEntries = 1000;
+
+  /// Number of oldest entries to remove when [maxDebounceEntries] is exceeded
+  /// When cleanup is triggered, this many oldest entries will be removed
+  /// Default is 100 entries (10% of default max)
+  static int debounceCleanupCount = 100;
+
   /// Cache for debounce functionality
   /// Stores the last execution timestamp for each debounced log
   static final Map<String, DateTime> _debounceTimestamps = {};
@@ -213,6 +224,10 @@ class Dev {
   ///
   /// This prevents rapid-fire logging of the same message by enforcing a minimum time interval
   /// between consecutive logs with the same key
+  ///
+  /// Memory Management:
+  /// - When [maxDebounceEntries] is exceeded, automatically removes the oldest [debounceCleanupCount] entries
+  /// - This prevents unbounded memory growth in long-running applications
   static bool shouldDebounce(String key, int debounceMs) {
     if (debounceMs <= 0) return false;
 
@@ -220,6 +235,11 @@ class Dev {
     final lastTime = _debounceTimestamps[key];
 
     if (lastTime == null) {
+      // Check if we need to cleanup old entries before adding new one
+      if (maxDebounceEntries > 0 &&
+          _debounceTimestamps.length >= maxDebounceEntries) {
+        _cleanupOldestDebounceEntries();
+      }
       _debounceTimestamps[key] = now;
       return false;
     }
@@ -232,6 +252,24 @@ class Dev {
     // Update timestamp and allow log
     _debounceTimestamps[key] = now;
     return false;
+  }
+
+  /// Clean up the oldest debounce entries to free memory
+  /// Removes [debounceCleanupCount] oldest entries from the debounce cache
+  /// Called automatically when [maxDebounceEntries] is exceeded
+  static void _cleanupOldestDebounceEntries() {
+    if (_debounceTimestamps.isEmpty || debounceCleanupCount <= 0) return;
+
+    // Sort entries by timestamp (oldest first) and get keys to remove
+    final sortedEntries = _debounceTimestamps.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+
+    // Remove the oldest entries up to debounceCleanupCount
+    final removeCount =
+        debounceCleanupCount.clamp(0, _debounceTimestamps.length);
+    for (int i = 0; i < removeCount; i++) {
+      _debounceTimestamps.remove(sortedEntries[i].key);
+    }
   }
 
   /// Clear all debounce timestamps to reset debounce state
