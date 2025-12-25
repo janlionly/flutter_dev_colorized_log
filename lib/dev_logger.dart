@@ -424,7 +424,7 @@ class Dev {
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
   /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void exe(String msg,
+  static void _exe(String msg,
       {String? name,
       DevLevel level = DevLevel.normal,
       bool? isLog,
@@ -505,7 +505,7 @@ class Dev {
     String? debounceKey,
     String? tag,
   }) {
-    exe(
+    _exe(
       msg,
       name: name,
       level: DevLevel.normal,
@@ -545,7 +545,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
@@ -580,7 +580,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
@@ -615,7 +615,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
@@ -650,7 +650,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
@@ -723,7 +723,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
@@ -760,7 +760,7 @@ class Dev {
     String? tag,
   }) {
     final String fileInfo = _getFileLocation();
-    Dev.exe(msg,
+    Dev._exe(msg,
         isLog: isLog,
         isMultConsole: isMultConsole,
         isDebug: isDebug,
