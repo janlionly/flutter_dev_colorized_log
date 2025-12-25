@@ -2,7 +2,6 @@
  * Author: janlionly (janlionly@gmail.com)
  * Date:   2023-09-21
  */
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'src/customized_logger.dart';
@@ -33,29 +32,32 @@ extension DevLevelExtension on DevLevel {
   }
 }
 
-/// Dev - A flexible and colorized logging utility for Flutter/Dart development
+/// Dev - A lightweight callback-based logging utility for Flutter/Dart development
 ///
-/// This class provides various logging methods with customizable colors, levels,
-/// and advanced features like debouncing, one-time printing, and custom final functions.
+/// This is a simplified version focused on execution callbacks (exe* methods).
+/// It controls callback execution through level thresholds (logLevel and exeLevel).
+/// All log* methods have been removed - use exe* methods to trigger callbacks based on severity levels.
 ///
 /// Configuration properties:
 /// - [enable]: Global switch to enable/disable all logging
-/// - [isDebugPrint]: Whether [Dev.print] method prints only in debug mode
+/// - [isDebugPrint]: Controls debug mode printing for exe* methods
 /// - [isLogFileLocation]: Whether to log file location information
 /// - [isLightweightMode]: Skip stack trace capture for maximum performance
 /// - [useOptimizedStackTrace]: Use stack_trace package for 40-60% better performance (default: true)
 /// - [defaultColorInt]: Default ANSI color code (0-107) for log text
-/// - [prefixName]: Prefix string prepended to all log messages
-/// - [isLogShowDateTime]: Whether to display timestamp in logs
+/// - [prefixName]: Prefix string prepended to all messages
+/// - [isLogShowDateTime]: Whether to display timestamp in output
 /// - [isMultConsoleLog]: Whether to use multi-console logging mode
-/// - [logLevel]: Minimum log level threshold for console output
-/// - [exeLevel]: Minimum log level threshold for executing [exeFinalFunc]
+/// - [logLevel]: Minimum log level threshold for console output (filters what gets displayed)
+/// - [exeLevel]: Minimum log level threshold for executing [exeFinalFunc] (controls callback execution)
 /// - [exeFinalFunc]: Custom callback function executed when log level meets threshold
 /// - [isExeWithDateTime]: Whether to include timestamp when executing final function
 /// - [isExeWithShowLog]: Whether to show log when executing final function
 /// - [isExeDiffColor]: Whether to use different colors for final function execution
 /// - [isReplaceNewline]: Whether to replace newline characters for better console visibility
 /// - [newlineReplacement]: Replacement string for newline characters
+/// - [tags]: Tag set for filtering output
+/// - [isFilterByTags]: Whether to enable tag-based filtering
 class Dev {
   /// Global switch to enable or disable all logging
   /// When false, logs are suppressed unless overridden by individual log calls with isLog: true
@@ -406,195 +408,6 @@ class Dev {
           DevLevel.fatal: isMultConsoleLog ? 47 : 6,
         }
       : _logColorMap;
-
-  /// Default color log
-  /// @param[msg]: The message string to be logged
-  /// @param[level]: The log level (verbose, normal, info, success, warn, error, fatal), defaults to normal
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
-  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
-  /// @param[time]: Custom timestamp for the log; if null, uses current time
-  /// @param[sequenceNumber]: Sequence number for log ordering
-  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name
-  /// @param[zone]: Dart Zone where the log originates from
-  /// @param[error]: Associated error object to be logged alongside the message
-  /// @param[stackTrace]: Stack trace information for debugging
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void log(
-    String msg, {
-    DevLevel level = DevLevel.normal,
-    bool? isLog,
-    int? colorInt,
-    String? fileLocation,
-    DateTime? time,
-    int? sequenceNumber,
-    String? name,
-    Zone? zone,
-    Object? error,
-    StackTrace? stackTrace,
-    bool? execFinalFunc,
-    String? printOnceIfContains,
-    int debounceMs = 0,
-    String? debounceKey,
-    String? tag,
-  }) {
-    int ci = colorInt ??
-        (_logColorMap[level] ??
-            (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
-    final String fileInfo =
-        fileLocation != null ? '($fileLocation): ' : _getFileLocation();
-    final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
-    final theName = name ?? level.alias.split('.').last;
-
-    // Extract tag from stack trace if not provided
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: level,
-      enable: Dev.enable,
-      colorInt:
-          execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      time: time,
-      sequenceNumber: sequenceNumber,
-      level: levelMap[level] ?? 0,
-      name: theName,
-      zone: zone,
-      error: error,
-      stackTrace: stackTrace,
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// Alias for [log] method - logs a debug/normal level message
-  /// This is the recommended method name. The [log] method is deprecated.
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
-  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
-  /// @param[time]: Custom timestamp for the log; if null, uses current time
-  /// @param[sequenceNumber]: Sequence number for log ordering
-  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name
-  /// @param[zone]: Dart Zone where the log originates from
-  /// @param[error]: Associated error object to be logged alongside the message
-  /// @param[stackTrace]: Stack trace information for debugging
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logDebug(
-    String msg, {
-    bool? isLog,
-    int? colorInt,
-    String? fileLocation,
-    DateTime? time,
-    int? sequenceNumber,
-    String? name,
-    Zone? zone,
-    Object? error,
-    StackTrace? stackTrace,
-    bool? execFinalFunc,
-    String? printOnceIfContains,
-    int debounceMs = 0,
-    String? debounceKey,
-    String? tag,
-  }) {
-    log(
-      msg,
-      level: DevLevel.normal,
-      isLog: isLog,
-      colorInt: colorInt,
-      fileLocation: fileLocation,
-      time: time,
-      sequenceNumber: sequenceNumber,
-      name: name,
-      zone: zone,
-      error: error,
-      stackTrace: stackTrace,
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: tag,
-    );
-  }
-
-  /// Log supporting on multiple consoles
-  /// @param[object]: The object to be logged (will be converted to string)
-  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name with dbgPrt/unlPrt prefix
-  /// @param[level]: The log level (verbose, normal, info, success, warn, error, fatal), defaults to normal
-  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
-  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[error]: Associated error object to be logged alongside the message
-  /// @param[stackTrace]: Stack trace information for debugging
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void print(Object? object,
-      {String? name,
-      DevLevel level = DevLevel.normal,
-      int? colorInt,
-      bool? isLog,
-      String? fileLocation,
-      bool? isDebug,
-      bool? execFinalFunc,
-      Object? error,
-      StackTrace? stackTrace,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo =
-        fileLocation != null ? '($fileLocation): ' : _getFileLocation();
-    int ci = colorInt ??
-        (_logColorMap[level] ??
-            (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
-    String msg = "$object";
-    bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
-    var theName = name ?? level.alias.split('.').last;
-
-    final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
-    theName =
-        '$prefix-$theName'; // Use prefix directly since enum names no longer start with 'log'
-
-    // Extract tag from stack trace if not provided
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: level,
-      enable: Dev.enable,
-      colorInt:
-          execFinalFunc != null && execFinalFunc ? _exeColorMap[level]! : ci,
-      isLog: isLog,
-      isMultConsole: true,
-      isDebugPrint: isDbgPrint,
-      fileInfo: fileInfo,
-      name: theName,
-      error: error,
-      stackTrace: stackTrace,
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
 
   /// Execute custom final func with purple text or blue text with multiple consoles
   /// @param[msg]: The message string to be logged
@@ -958,251 +771,5 @@ class Dev {
         debounceMs: debounceMs,
         debounceKey: debounceKey,
         tag: tag);
-  }
-
-  /// Verbose - Dark gray text for detailed debug information
-  /// Use for verbose debugging details
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logVerbose(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.verbose,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.verbose]!
-          : _logColorMap[DevLevel.verbose]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      name: DevLevel.verbose.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// Fatal/Critical error - text (orange/purple)
-  /// Use for fatal errors that require immediate attention
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logFatal(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.fatal,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.fatal]!
-          : _logColorMap[DevLevel.fatal]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      name: DevLevel.fatal.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// Info - Blue text for informational messages
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logInfo(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.info,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.info]!
-          : _logColorMap[DevLevel.info]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      name: DevLevel.info.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// Success - Green text for success/completion messages
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logSuccess(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.success,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.success]!
-          : _logColorMap[DevLevel.success]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      name: DevLevel.success.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// Warn - Yellow text for warning messages
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logWarn(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.warn,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.warn]!
-          : _logColorMap[DevLevel.warn]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      level: 1000,
-      name: DevLevel.warn.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
-  }
-
-  /// @deprecated Use [logWarn] instead. This will be removed in future versions.
-  /// Warning - Yellow text for warning messages (deprecated, use logWarn)
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  @Deprecated('Use logWarn instead')
-  static void logWarning(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    logWarn(msg,
-        isLog: isLog,
-        execFinalFunc: execFinalFunc,
-        printOnceIfContains: printOnceIfContains,
-        debounceMs: debounceMs,
-        debounceKey: debounceKey,
-        tag: tag);
-  }
-
-  /// Error - Red text for error messages
-  /// @param[msg]: The message string to be logged
-  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
-  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
-  /// @param[error]: Associated error object to be logged alongside the message
-  /// @param[stackTrace]: Stack trace information for debugging
-  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
-  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
-  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
-  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
-  static void logError(String msg,
-      {bool? isLog,
-      bool? execFinalFunc,
-      Object? error,
-      StackTrace? stackTrace,
-      String? printOnceIfContains,
-      int debounceMs = 0,
-      String? debounceKey,
-      String? tag}) {
-    final String fileInfo = _getFileLocation();
-    final effectiveTag = tag ?? _getTagFromStackTrace();
-    DevColorizedLog.logCustom(
-      msg,
-      devLevel: DevLevel.error,
-      enable: Dev.enable,
-      colorInt: execFinalFunc != null && execFinalFunc
-          ? _exeColorMap[DevLevel.error]!
-          : _logColorMap[DevLevel.error]!,
-      isLog: isLog,
-      fileInfo: fileInfo,
-      level: 2000,
-      name: DevLevel.error.alias, // Use enum alias for display name
-      execFinalFunc: execFinalFunc,
-      error: error,
-      stackTrace: stackTrace,
-      printOnceIfContains: printOnceIfContains,
-      debounceMs: debounceMs,
-      debounceKey: debounceKey,
-      tag: effectiveTag,
-    );
   }
 }
