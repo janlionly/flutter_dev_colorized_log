@@ -1,3 +1,14 @@
+## [2.3.0] - 25 Dec 2025
+
+**New Features:**
+* Added `DevLevelExtension` with `alias` property - DevLevel.normal now displays as "debug" in log output
+* Added `Dev.logDebug()` - alias method for `Dev.log()` with DevLevel.normal
+* Added `Dev.exeDebug()` - alias method for `Dev.exe()` with DevLevel.normal
+* Added `Dev.exeSuffix` - customizable suffix for execution mode logs (default: '&exe')
+* Replaced internal usage of `.name` with `.alias` for better semantic clarity
+
+**Note:** Original `log()` and `exe()` methods remain unchanged and fully functional.
+
 ## [2.2.1] - 22 Dec 2025
 
 **New Features:**

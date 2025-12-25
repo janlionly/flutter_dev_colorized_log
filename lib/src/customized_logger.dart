@@ -65,7 +65,7 @@ class DevColorizedLog {
     DateTime? time,
     int? sequenceNumber,
     int level = 0,
-    String name = 'logNor',
+    String name = 'debug',
     Zone? zone,
     Object? error,
     StackTrace? stackTrace,
@@ -127,7 +127,7 @@ class DevColorizedLog {
     DateTime? time,
     int? sequenceNumber,
     int level = 0,
-    String name = 'logNor',
+    String name = 'debug',
     Zone? zone,
     Object? error,
     StackTrace? stackTrace,
@@ -139,8 +139,8 @@ class DevColorizedLog {
     final emojiPrefix =
         Dev.isShowLevelEmojis ? '${levelEmojis[devLevel]}:' : '';
     name = '$emojiPrefix${Dev.prefixName}$name';
-    // Since enum names no longer have 'log' prefix, directly append '&exe' for execution mode
-    final finalName = isExe ? '$name&exe' : name;
+    // Append custom execution suffix when in execution mode
+    final finalName = isExe ? '$name${Dev.exeSuffix}' : name;
 
     // Format tag prefix - display tag before datetime if tag is not null and not empty
     String tagPrefix = '';

@@ -17,6 +17,22 @@ import 'src/customized_logger.dart';
 /// - fatal: Critical/fatal errors requiring immediate attention (orange/purple)
 enum DevLevel { verbose, normal, info, success, warn, error, fatal }
 
+/// Extension to provide alias names for DevLevel enum values
+/// The alias property returns the display name for each log level
+extension DevLevelExtension on DevLevel {
+  /// Returns the alias (display name) for this log level
+  /// For DevLevel.normal, returns "debug" as the new display name
+  /// For other levels, returns the enum name as-is
+  String get alias {
+    switch (this) {
+      case DevLevel.normal:
+        return 'debug';
+      default:
+        return name;
+    }
+  }
+}
+
 /// Dev - A flexible and colorized logging utility for Flutter/Dart development
 ///
 /// This class provides various logging methods with customizable colors, levels,
@@ -325,6 +341,11 @@ class Dev {
   /// Useful for distinguishing logs from different modules or components
   static String prefixName = '';
 
+  /// Suffix string appended to log names when executing final function
+  /// Defaults to '&exe' to indicate execution mode
+  /// Customize this to use your preferred execution indicator
+  static String exeSuffix = '&exe';
+
   /// Whether to replace newline characters and clean up whitespace for better search visibility in console
   /// Defaults to true in debug mode (kDebugMode), false in release mode
   /// When true, newline characters are replaced with [newlineReplacement] string
@@ -427,7 +448,7 @@ class Dev {
     final String fileInfo =
         fileLocation != null ? '($fileLocation): ' : _getFileLocation();
     final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
-    final theName = name ?? level.toString().split('.').last;
+    final theName = name ?? level.alias.split('.').last;
 
     // Extract tag from stack trace if not provided
     final effectiveTag = tag ?? _getTagFromStackTrace();
@@ -452,6 +473,60 @@ class Dev {
       debounceMs: debounceMs,
       debounceKey: debounceKey,
       tag: effectiveTag,
+    );
+  }
+
+  /// Alias for [log] method - logs a debug/normal level message
+  /// This is the recommended method name. The [log] method is deprecated.
+  /// @param[msg]: The message string to be logged
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[fileLocation]: Custom file location string; if null, auto-detects from stack trace
+  /// @param[time]: Custom timestamp for the log; if null, uses current time
+  /// @param[sequenceNumber]: Sequence number for log ordering
+  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name
+  /// @param[zone]: Dart Zone where the log originates from
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[execFinalFunc]: If true, executes the custom final function [exeFinalFunc]
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
+  static void logDebug(
+    String msg, {
+    bool? isLog,
+    int? colorInt,
+    String? fileLocation,
+    DateTime? time,
+    int? sequenceNumber,
+    String? name,
+    Zone? zone,
+    Object? error,
+    StackTrace? stackTrace,
+    bool? execFinalFunc,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) {
+    log(
+      msg,
+      level: DevLevel.normal,
+      isLog: isLog,
+      colorInt: colorInt,
+      fileLocation: fileLocation,
+      time: time,
+      sequenceNumber: sequenceNumber,
+      name: name,
+      zone: zone,
+      error: error,
+      stackTrace: stackTrace,
+      execFinalFunc: execFinalFunc,
+      printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
+      tag: tag,
     );
   }
 
@@ -491,7 +566,7 @@ class Dev {
             (defaultColorInt ?? (isMultConsoleLog ? 4 : 0)));
     String msg = "$object";
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
-    var theName = name ?? level.toString().split('.').last;
+    var theName = name ?? level.alias.split('.').last;
 
     final prefix = isDbgPrint == null || isDbgPrint ? 'dbgPrt' : 'unlPrt';
     theName =
@@ -553,7 +628,7 @@ class Dev {
     int ci = colorInt ?? (_exeColorMap[level] ?? 44);
     final String theFileInfo = fileInfo ?? _getFileLocation();
     bool isMult = isMultConsole != null && isMultConsole;
-    var theName = name ?? level.toString().split('.').last;
+    var theName = name ?? level.alias.split('.').last;
     bool? isDbgPrint = isDebug ?? Dev.isDebugPrint;
     final levelMap = {DevLevel.warn: 1000, DevLevel.error: 2000};
 
@@ -584,6 +659,54 @@ class Dev {
       debounceMs: debounceMs,
       debounceKey: debounceKey,
       tag: effectiveTag,
+    );
+  }
+
+  /// Alias for [exe] method - executes debug/normal level log with custom final function
+  /// This is the recommended method name. The [exe] method is deprecated.
+  /// @param[msg]: The message string to be logged
+  /// @param[name]: Custom name/tag for the log entry; if null, uses the level name (with prefix for multi-console)
+  /// @param[isLog]: If set to true, logs regardless of the static [enable] flag
+  /// @param[isMultConsole]: If true, enables multi-console logging mode with dbgPrt/unlPrt prefix
+  /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
+  /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[fileInfo]: Custom file location string; if null, auto-detects from stack trace
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
+  /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
+  /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
+  /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
+  /// @param[tag]: Tag for show and filtering; displayed in log output, and when [isFilterByTags] is true, only logs with tags matching [tags] are displayed
+  static void exeDebug(
+    String msg, {
+    String? name,
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? fileInfo,
+    Object? error,
+    StackTrace? stackTrace,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) {
+    exe(
+      msg,
+      name: name,
+      level: DevLevel.normal,
+      isLog: isLog,
+      isMultConsole: isMultConsole,
+      isDebug: isDebug,
+      colorInt: colorInt,
+      fileInfo: fileInfo,
+      error: error,
+      stackTrace: stackTrace,
+      printOnceIfContains: printOnceIfContains,
+      debounceMs: debounceMs,
+      debounceKey: debounceKey,
+      tag: tag,
     );
   }
 
@@ -864,7 +987,7 @@ class Dev {
           : _logColorMap[DevLevel.verbose]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: DevLevel.verbose.name, // Use enum name instead of hardcoded string
+      name: DevLevel.verbose.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -900,7 +1023,7 @@ class Dev {
           : _logColorMap[DevLevel.fatal]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: DevLevel.fatal.name, // Use enum name instead of hardcoded string
+      name: DevLevel.fatal.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -935,7 +1058,7 @@ class Dev {
           : _logColorMap[DevLevel.info]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: DevLevel.info.name, // Use enum name instead of hardcoded string
+      name: DevLevel.info.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -970,7 +1093,7 @@ class Dev {
           : _logColorMap[DevLevel.success]!,
       isLog: isLog,
       fileInfo: fileInfo,
-      name: DevLevel.success.name, // Use enum name instead of hardcoded string
+      name: DevLevel.success.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -1006,7 +1129,7 @@ class Dev {
       isLog: isLog,
       fileInfo: fileInfo,
       level: 1000,
-      name: DevLevel.warn.name, // Use enum name instead of hardcoded string
+      name: DevLevel.warn.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       printOnceIfContains: printOnceIfContains,
       debounceMs: debounceMs,
@@ -1072,7 +1195,7 @@ class Dev {
       isLog: isLog,
       fileInfo: fileInfo,
       level: 2000,
-      name: DevLevel.error.name, // Use enum name instead of hardcoded string
+      name: DevLevel.error.alias, // Use enum alias for display name
       execFinalFunc: execFinalFunc,
       error: error,
       stackTrace: stackTrace,

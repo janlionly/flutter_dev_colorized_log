@@ -23,6 +23,16 @@ A powerful and flexible Flutter/Dart logging utility with colorized console outp
 See examples in the `/example` folder. For more details, please run the example project.
 
 ```dart
+/* V 2.3.0 New debug-level methods for better semantics */
+// The DevLevel.normal enum value now displays as "debug" in logs via the alias property
+// New convenient methods for debug-level logging:
+Dev.logDebug('Debug message'); // Equivalent to Dev.log('...', level: DevLevel.normal)
+Dev.exeDebug('Debug with callback'); // Equivalent to Dev.exe('...', level: DevLevel.normal)
+
+// Note: DevLevel.normal enum value remains unchanged for backward compatibility
+// Only the display name changed from "normal" to "debug" for better semantic clarity
+// Original log() and exe() methods continue to work as before
+
 /* Global settings:*/
 Dev.enable = true; // Whether to log messages
 Dev.isLogFileLocation = true; // Whether to log the file location info
@@ -188,6 +198,13 @@ Dev.useOptimizedStackTrace = true; // Use stack_trace package for 40-60% better 
 Dev.log('Error: USER-001 login failed', printOnceIfContains: 'USER-001');
 Dev.log('Retry: USER-001 timeout again', printOnceIfContains: 'USER-001'); // Skipped! (message contains 'USER-001' which was already logged)
 Dev.clearCachedKeys(); // Clear all cached keywords if needed
+
+/// V 2.3.0 custom execution suffix for execution mode logs
+Dev.exeSuffix = '&exe'; // Default suffix appended to log names when executing final function
+Dev.exeSuffix = '@exe'; // Customize to your preferred execution indicator
+Dev.exeSuffix = '|exec'; // Use pipe separator
+Dev.exeSuffix = ':execute'; // Use colon separator
+// Example output: [📬:debug&exe] for default, [📬:debug@exe] with custom suffix
 
 /// V 2.0.3 prefix name for all logs
 Dev.prefixName = 'MyApp'; // Custom prefix name to prepend to all log messages
