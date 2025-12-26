@@ -133,7 +133,7 @@ class Dev {
 
         // Get the caller's frame (skip this function itself)
         final frame =
-            trace.frames.length > 1 ? trace.frames[1] : trace.frames[0];
+            trace.frames.length > 2 ? trace.frames[2] : trace.frames[1];
         final uri = frame.uri;
         final filename = uri.pathSegments.isNotEmpty
             ? uri.pathSegments.last
@@ -163,7 +163,7 @@ class Dev {
         if (trace.frames.isEmpty) return null;
 
         final frame =
-            trace.frames.length > 1 ? trace.frames[1] : trace.frames[0];
+            trace.frames.length > 2 ? trace.frames[2] : trace.frames[1];
         return _extractTagFromUri(frame.uri);
       } catch (e) {
         return null;
