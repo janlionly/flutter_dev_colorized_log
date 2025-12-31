@@ -1,5 +1,10 @@
 ## [2.4.0] - 31 Dec 2025
 
+**New Features:**
+* Added `error` and `stackTrace` parameters to `logFatal()` and `exeFatal()` methods
+  - Consistent with `logError()` and `exeError()` for better error reporting in fatal logs
+  - Supports error object and stack trace capture for critical failures
+
 **Performance Optimizations:**
 * Added batched logging system for high-frequency logging scenarios
   - `Dev.useBatchedLogging` (default: true in debug mode)

@@ -268,6 +268,16 @@ Dev.print(e, error: e, level: DevLevel.logErr);
 Dev.logError('$e', error: e);
 Dev.exeError('$e', error: e, colorInt: 91);
 
+/// V 2.4.0 Fatal level logging with error and stack trace support
+/// logFatal and exeFatal now support error objects and stack traces like logError/exeError
+try {
+  criticalOperation();
+} catch (e, stackTrace) {
+  // Log fatal errors with full error details
+  Dev.logFatal('Critical system failure', error: e, stackTrace: stackTrace);
+  Dev.exeFatal('Fatal error occurred', error: e, stackTrace: stackTrace);
+}
+
 /// V1.2.6 Enable logging on multiple platform consoles (Xcode, VS Code, Terminal, etc.)
 Dev.isMultConsoleLog = true;
 
