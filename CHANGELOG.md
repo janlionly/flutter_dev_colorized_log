@@ -1,3 +1,14 @@
+## [2.4.0] - 31 Dec 2025
+
+**Performance Optimizations:**
+* Added batched logging system for high-frequency logging scenarios
+  - `Dev.useBatchedLogging` (default: true in debug mode)
+  - `Dev.batchSize` (default: 10)
+  - `Dev.batchFlushMs` (default: 50ms)
+  - `Dev.forceFlushLogs()` - force flush pending logs immediately
+* Optimized stack trace extraction, string processing, and newline handling
+* Changed `Dev.useFastPrint` default to `false` for safer logging
+
 ## [2.3.0] - 25 Dec 2025
 
 **New Features:**

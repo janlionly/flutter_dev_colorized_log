@@ -1,6 +1,6 @@
 name: dev_colorized_log
 description: A powerful Flutter/Dart logging utility with colorized output, smart filtering, tag-based filtering, debouncing, performance optimizations, and custom callbacks for efficient debugging and monitoring.
-version: 2.3.0
+version: 2.4.0
 homepage: https://github.com/janlionly/flutter_dev_colorized_log
 
 environment:
