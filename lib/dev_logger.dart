@@ -801,6 +801,8 @@ class Dev {
   /// @param[isMultConsole]: If true, enables multi-console logging mode
   /// @param[isDebug]: If true, prints only on debug mode; if null, uses static [isDebugPrint]
   /// @param[colorInt]: ANSI color code (0 to 107) for text color customization
+  /// @param[error]: Associated error object to be logged alongside the message
+  /// @param[stackTrace]: Stack trace information for debugging
   /// @param[printOnceIfContains]: If provided, only prints once when message contains this keyword
   /// @param[debounceMs]: Debounce time interval in milliseconds, logs within this interval will be discarded
   /// @param[debounceKey]: Custom key for debounce identification (if not provided, uses msg|devLevel|name as fallback)
@@ -811,6 +813,8 @@ class Dev {
     bool? isMultConsole,
     bool? isDebug,
     int? colorInt,
+    Object? error,
+    StackTrace? stackTrace,
     String? printOnceIfContains,
     int debounceMs = 0,
     String? debounceKey,
@@ -823,6 +827,8 @@ class Dev {
         isDebug: isDebug,
         colorInt: colorInt ?? _exeColorMap[DevLevel.fatal],
         level: DevLevel.fatal,
+        error: error,
+        stackTrace: stackTrace,
         printOnceIfContains: printOnceIfContains,
         debounceMs: debounceMs,
         debounceKey: debounceKey,
