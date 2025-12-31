@@ -40,26 +40,41 @@ class UITextView extends StatefulWidget {
 }
 
 class UITextViewState extends State<UITextView> {
-  late String _text;
+  // Performance optimization: Use list instead of concatenating strings
+  // This eliminates the need to copy the entire string on each append
+  final List<String> _logEntries = [];
   final ScrollController _scrollController = ScrollController();
+
+  // Limit maximum number of log entries to prevent unbounded memory growth
+  // Old entries are automatically removed when limit is exceeded
+  static const int maxLogEntries = 1000;
 
   @override
   void initState() {
     super.initState();
-    _text = widget.initialText;
+    if (widget.initialText.isNotEmpty) {
+      _logEntries.add(widget.initialText);
+    }
   }
 
   void appendText(String newText) {
     setState(() {
-      _text += "\n$newText";
+      _logEntries.add(newText);
+
+      // Automatically remove old entries when limit is exceeded
+      // This prevents memory leak in long-running applications
+      if (_logEntries.length > maxLogEntries) {
+        _logEntries.removeRange(0, _logEntries.length - maxLogEntries);
+      }
     });
 
+    // Performance optimization: Use jumpTo instead of animateTo
+    // This eliminates animation overhead and prevents animation stacking
+    // in high-frequency logging scenarios
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
     });
   }
 
@@ -71,14 +86,26 @@ class UITextViewState extends State<UITextView> {
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: SingleChildScrollView(
+      // Performance optimization: Use ListView.builder for virtual scrolling
+      // Only visible items are rendered, dramatically improving performance
+      // with large numbers of log entries (1000+ entries)
+      child: ListView.builder(
         controller: _scrollController,
-        child: Text(
-          _text,
-          style: widget.textStyle ?? const TextStyle(fontSize: 16.0),
-        ),
+        itemCount: _logEntries.length,
+        itemBuilder: (context, index) {
+          return Text(
+            _logEntries[index],
+            style: widget.textStyle ?? const TextStyle(fontSize: 16.0),
+          );
+        },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }
 
