@@ -5,6 +5,15 @@ import 'package:dev_colorized_log/dev_colorized_log.dart';
 
 import 'tag_demo_page.dart';
 
+void causeError() {
+  _layerA();
+}
+
+void _layerA() => _layerB();
+void _layerB() => _layerC();
+void _layerC() =>
+    throw Exception("🔥 Manually triggered exception (with full stack trace)");
+
 void main() {
   Dev.enable = true;
   Dev.isMultConsoleLog = true;
@@ -13,6 +22,7 @@ void main() {
   Dev.isExeDiffColor = false;
   Dev.prefixName = 'MyApp-';
   Dev.isShowLevelEmojis = false;
+  Dev.isReplaceNewline = false;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     Dev.logError('dev_colorized_log:',
@@ -23,6 +33,12 @@ void main() {
     return true;
   };
   runApp(const MyApp());
+
+  try {
+    causeError();
+  } catch (e, s) {
+    Dev.exeFatal('Caught exception:', error: e, stackTrace: s);
+  }
 }
 
 class UITextView extends StatefulWidget {
@@ -268,11 +284,11 @@ class _MyHomePageState extends State<MyHomePage> {
     Dev.logWarn('Messy whitespace cleaned up:\n$messyExample');
 
     // Disable newline replacement to show difference
-    Dev.isReplaceNewline = false;
+    // Dev.isReplaceNewline = false;
     Dev.logWarn('Multi-line warning without replacement:\n$multiLineExample');
 
     // Re-enable with custom replacement character
-    Dev.isReplaceNewline = true;
+    // Dev.isReplaceNewline = true;
     Dev.newlineReplacement = ' >> ';
     Dev.logWarn(
         'Multi-line warning with custom replacement:\n$multiLineExample');
@@ -293,7 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
       #1 main (main.dart:12:3)
     ''';
     Dev.logError(multiLines);
-    Dev.isReplaceNewline = false;
+    // Dev.isReplaceNewline = false;
     Dev.logError(multiLines);
 
     Dev.log('==========================All Color Log========================');
@@ -476,6 +492,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Dev.print(x);
     } catch (e) {
       /// V 1.2.8 special error formatter
+      Dev.exeFatal('fatal error: $e', error: e);
       Dev.print(e, error: e, level: DevLevel.error);
       Dev.logError('$e', error: e);
       Dev.exeError('$e', error: e, colorInt: 91);

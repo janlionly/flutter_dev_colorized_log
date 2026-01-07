@@ -1,3 +1,11 @@
+## [2.4.1] - 07 Jan 2026
+
+**Bug Fixes:**
+* Fixed fatal level color rendering to use proper red color (91) instead of incorrect color codes (5/6)
+* Fixed fatal level blinking effect to use correct ANSI escape sequence (`\u001b[5;91m`)
+  - Fatal logs now properly display in red with blinking effect when `isMultConsoleLog` is false
+  - Ensures consistent visual distinction for critical fatal-level logs across all console outputs
+
 ## [2.4.0] - 31 Dec 2025
 
 **New Features:**
