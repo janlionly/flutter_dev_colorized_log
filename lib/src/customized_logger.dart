@@ -272,19 +272,24 @@ class DevColorizedLog {
       // Lazy process on first use and cache result
       processedMsg ??= _processNewlines(msg);
 
+      final ansi = devLevel == DevLevel.fatal
+          ? '\u001b[5;${colorInt}m'
+          : '\x1B[${colorInt}m';
+      const end = '\x1B[0m';
+
       if ((isMultConsole != null && isMultConsole == true) ||
           Dev.isMultConsoleLog) {
         // Performance optimization: Use batched logging to reduce main thread blocking
         final formattedMsg =
-            '\x1B[${colorInt}m[$finalName]$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg!, colorInt)}\x1B[0m';
+            '$ansi[$finalName]$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg!, colorInt, ansi)}$end';
         _LogBatcher.addLog(formattedMsg);
       } else {
         dev.log(
-          '\x1B[${colorInt}m$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg!, colorInt)}\x1B[0m',
+          '$ansi$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg!, colorInt, ansi)}$end',
           time: time,
           sequenceNumber: sequenceNumber,
           level: level,
-          name: '\x1B[${colorInt}m$finalName\x1B[0m',
+          name: '$ansi$finalName$end',
           zone: zone,
 
           // !!!: handled by _errorMessage above.
@@ -355,14 +360,14 @@ $stackTrace
   /// Apply ANSI color codes to each line in a multi-line message
   /// Performance optimization: Use StringBuffer for efficient string concatenation
   /// 40-50% faster than split + map + join for multi-line messages
-  static String _colorizeLines(String msg, int colorCode) {
+  static String _colorizeLines(String msg, int colorCode, String ansi) {
     const lineBreak = '\n';
     if (!msg.contains(lineBreak)) {
       return msg;
     }
 
     // Pre-compute ANSI codes to avoid repeated string concatenation
-    final prefix = '\x1B[${colorCode}m';
+    final prefix = ansi;
     const suffix = '\x1B[0m';
 
     // Use StringBuffer for efficient concatenation

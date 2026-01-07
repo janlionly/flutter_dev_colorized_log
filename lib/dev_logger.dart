@@ -452,7 +452,7 @@ class Dev {
         DevLevel.success: 92,
         DevLevel.warn: 93,
         DevLevel.error: 91,
-        DevLevel.fatal: isMultConsoleLog ? 95 : 5,
+        DevLevel.fatal: isMultConsoleLog ? 95 : 91,
       };
 
   static Map<DevLevel, int> get _exeColorMap => isExeDiffColor
@@ -463,7 +463,7 @@ class Dev {
           DevLevel.success: 42,
           DevLevel.warn: 43,
           DevLevel.error: 41,
-          DevLevel.fatal: isMultConsoleLog ? 47 : 6,
+          DevLevel.fatal: isMultConsoleLog ? 47 : 91,
         }
       : _logColorMap;
 
