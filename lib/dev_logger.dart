@@ -834,4 +834,176 @@ class Dev {
         debounceKey: debounceKey,
         tag: tag);
   }
+
+  // Alias methods for convenience
+
+  /// Alias for [exeDebug] - shorter method name for debug level logging
+  static void d(
+    String msg, {
+    String? name,
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? fileInfo,
+    Object? error,
+    StackTrace? stackTrace,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeDebug(msg,
+          name: name,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          fileInfo: fileInfo,
+          error: error,
+          stackTrace: stackTrace,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeVerbose] - shorter method name for verbose level logging
+  static void v(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeVerbose(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeInfo] - shorter method name for info level logging
+  static void i(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeInfo(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeWarn] - shorter method name for warn level logging
+  static void w(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeWarn(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeSuccess] - shorter method name for success level logging
+  static void s(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeSuccess(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeError] - shorter method name for error level logging
+  static void e(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    Object? error,
+    StackTrace? stackTrace,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeError(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          error: error,
+          stackTrace: stackTrace,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
+
+  /// Alias for [exeFatal] - shorter method name for fatal level logging
+  static void f(
+    String msg, {
+    bool? isLog,
+    bool? isMultConsole,
+    bool? isDebug,
+    int? colorInt,
+    Object? error,
+    StackTrace? stackTrace,
+    String? printOnceIfContains,
+    int debounceMs = 0,
+    String? debounceKey,
+    String? tag,
+  }) =>
+      exeFatal(msg,
+          isLog: isLog,
+          isMultConsole: isMultConsole,
+          isDebug: isDebug,
+          colorInt: colorInt,
+          error: error,
+          stackTrace: stackTrace,
+          printOnceIfContains: printOnceIfContains,
+          debounceMs: debounceMs,
+          debounceKey: debounceKey,
+          tag: tag);
 }
