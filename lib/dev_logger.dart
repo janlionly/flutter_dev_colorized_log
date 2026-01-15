@@ -105,6 +105,17 @@ class Dev {
   /// while print is faster but may lose logs if output is too frequent
   static bool useFastPrint = false;
 
+  /// Whether to print full long strings by splitting into chunks
+  /// When true (default), long strings are automatically split into ~800 character chunks
+  /// to ensure complete output without truncation, preserving ANSI colors across all chunks
+  /// When false, uses standard debugPrint which may truncate very long strings
+  ///
+  /// Defaults to true for complete log visibility
+  /// Set to false if you prefer standard debugPrint behavior or don't need long string support
+  ///
+  /// Performance note: When enabled, adds minimal overhead for ANSI color preservation
+  static bool isPrintFullString = true;
+
   /// Use batched logging to reduce main thread blocking
   /// When true, logs are accumulated and flushed in batches asynchronously
   /// This significantly improves performance in high-frequency logging scenarios (200+ logs/sec)

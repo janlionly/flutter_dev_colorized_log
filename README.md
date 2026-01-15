@@ -23,6 +23,28 @@ A powerful and flexible Flutter/Dart logging utility with colorized console outp
 See examples in the `/example` folder. For more details, please run the example project.
 
 ```dart
+/* V 2.5.0 Full string printing for long strings */
+// Control whether to automatically split long strings into chunks for complete output
+Dev.isPrintFullString = true; // Default: true - split long strings into 800-char chunks
+Dev.isPrintFullString = false; // Use standard debugPrint (may truncate very long strings)
+
+// When enabled, long strings are automatically split into ~800 character chunks
+// ensuring complete output without truncation, preserving ANSI colors across all chunks
+// Useful for logging large JSON payloads, API responses, or debug information
+
+// Example: Logging a very long API response
+String largeApiResponse = '{"data": [... 2000+ characters of JSON data ...]}';
+Dev.logSuccess(largeApiResponse); // All content will be printed across multiple lines with preserved green color
+
+// Example: Logging large debug information
+String debugInfo = 'Device info: battery=74%, sensors=[... 1500+ characters ...]';
+Dev.logInfo(debugInfo); // Complete output with preserved blue color
+
+// Recommendation:
+// - Development: true (default) for complete log visibility
+// - Production: true to ensure critical error details aren't truncated
+// - Set to false only if you prefer standard debugPrint behavior
+
 /* V 2.4.0 Batched logging for performance optimization */
 // Reduces main thread blocking by 70-80% in high-frequency logging scenarios (200+ logs/sec)
 // Logs are accumulated and flushed asynchronously in batches

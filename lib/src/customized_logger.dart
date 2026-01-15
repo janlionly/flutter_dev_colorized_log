@@ -60,7 +60,7 @@ class _LogBatcher {
           if (shouldUsePrint) {
             print(msg); // ignore: avoid_print
           } else {
-            debugPrint(msg);
+            _printLongString(msg);
           }
         }
       } finally {
@@ -85,7 +85,74 @@ class _LogBatcher {
     if (Dev.useFastPrint) {
       print(message); // ignore: avoid_print
     } else {
-      debugPrint(message);
+      _printLongString(message);
+    }
+  }
+
+  /// Print long strings completely by splitting into chunks
+  /// Ensures the entire message is printed without truncation
+  /// Preserves ANSI color codes across all chunks
+  ///
+  /// Performance optimization: Directly extracts ANSI codes from the message
+  /// using simple string operations instead of regex, then applies them to each chunk
+  static void _printLongString(String text) {
+    // Check global switch - if disabled, use standard debugPrint
+    if (!Dev.isPrintFullString) {
+      debugPrint(text);
+      return;
+    }
+
+    // Performance optimization: Extract ANSI codes using simple string operations
+    // ANSI codes start with \x1B[ and end with 'm'
+    String ansiPrefix = '';
+    String ansiSuffix = '';
+    String contentText = text;
+
+    // Extract prefix ANSI codes (from start until first non-ANSI character)
+    int prefixEnd = 0;
+    while (prefixEnd < text.length) {
+      if (prefixEnd + 4 < text.length &&
+          text.substring(prefixEnd, prefixEnd + 2) == '\x1B[') {
+        // Find the 'm' that ends this ANSI code
+        final mIndex = text.indexOf('m', prefixEnd);
+        if (mIndex != -1) {
+          prefixEnd = mIndex + 1;
+          continue;
+        }
+      }
+      break;
+    }
+
+    if (prefixEnd > 0) {
+      ansiPrefix = text.substring(0, prefixEnd);
+      contentText = text.substring(prefixEnd);
+    }
+
+    // Extract suffix ANSI codes (from end backwards)
+    // Typically \x1B[0m
+    if (contentText.endsWith('\x1B[0m')) {
+      ansiSuffix = '\x1B[0m';
+      contentText = contentText.substring(0, contentText.length - 4);
+    }
+
+    // If the string is short enough, print directly
+    if (contentText.length <= 800) {
+      debugPrint('$ansiPrefix$contentText$ansiSuffix');
+      return;
+    }
+
+    // Performance optimization: Use simple substring approach
+    // Split into 800-character chunks and apply ANSI codes to each
+    int offset = 0;
+    const chunkSize = 800;
+
+    while (offset < contentText.length) {
+      final end = (offset + chunkSize < contentText.length)
+          ? offset + chunkSize
+          : contentText.length;
+      final chunk = contentText.substring(offset, end);
+      debugPrint('$ansiPrefix$chunk$ansiSuffix');
+      offset = end;
     }
   }
 }
@@ -273,13 +340,14 @@ class DevColorizedLog {
       processedMsg ??= _processNewlines(msg);
 
       final ansi = devLevel == DevLevel.fatal
-          ? '\u001b[5;${colorInt}m'
+          ? '\x1B[5;${colorInt}m'
           : '\x1B[${colorInt}m';
       const end = '\x1B[0m';
 
       if ((isMultConsole != null && isMultConsole == true) ||
           Dev.isMultConsoleLog) {
         // Performance optimization: Use batched logging to reduce main thread blocking
+        // ANSI codes are extracted in _printLongString for better performance
         final formattedMsg =
             '$ansi[$finalName]$tagPrefix$formattedNow${fileInfo ?? ''}${_colorizeLines(processedMsg!, colorInt, ansi)}$end';
         _LogBatcher.addLog(formattedMsg);
