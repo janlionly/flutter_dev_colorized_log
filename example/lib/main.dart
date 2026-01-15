@@ -23,6 +23,7 @@ void main() {
   Dev.prefixName = 'MyApp-';
   Dev.isShowLevelEmojis = false;
   Dev.isReplaceNewline = false;
+  Dev.isPrintFullString = true;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     Dev.logError('dev_colorized_log:',
@@ -261,6 +262,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Reset to default (with emojis)
     Dev.isShowLevelEmojis = true;
+
+    /// V 2.5.0 Long string printing demo
+    /// Demonstrates automatic chunking of long strings with preserved ANSI colors
+    Dev.log(
+        '===================== Long String Printing Demo =====================');
+
+    // Example: Long technical documentation or article text
+    const longTechnicalText =
+        'Understanding Software Architecture Patterns: In modern software development, architectural patterns play a crucial role in building scalable, maintainable, and robust applications. The Model-View-Controller (MVC) pattern separates application logic into three interconnected components: the Model represents data and business logic, the View handles the presentation layer and user interface, and the Controller acts as an intermediary that processes user input and updates the Model and View accordingly. Microservices architecture, on the other hand, structures an application as a collection of loosely coupled services, each running in its own process and communicating through lightweight mechanisms such as HTTP REST APIs or message queues. This approach enables independent deployment, scaling, and technology diversity across services. Event-driven architecture emphasizes the production, detection, consumption, and reaction to events, allowing systems to be more responsive and decoupled. The Observer pattern, a fundamental behavioral design pattern, defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified automatically. Repository pattern mediates between the domain and data mapping layers, acting like an in-memory collection of domain objects. Dependency Injection promotes loose coupling by removing hard-coded dependencies and making it possible to change them at runtime or compile-time. Clean Architecture, proposed by Robert C. Martin, emphasizes the separation of concerns through layers with the Dependency Rule stating that source code dependencies can only point inwards towards higher-level policies.';
+
+    // Test with isPrintFullString enabled (default)
+    Dev.log('--- Long String Demo: isPrintFullString = true (default) ---');
+    Dev.logSuccess(
+        'Long technical article text will be split into chunks with preserved green color:');
+    Dev.logSuccess(longTechnicalText);
+
+    Dev.log('');
+    Dev.log('--- Notice: All chunks above maintain the green color! ---');
+    Dev.log('');
+
+    // Test with isPrintFullString disabled
+    Dev.log('--- Long String Demo: isPrintFullString = false ---');
+    Dev.logWarn('Same string with standard debugPrint (may be truncated):');
+    Dev.logWarn(longTechnicalText);
+
+    Dev.log('');
+    Dev.log(
+        '--- Notice: String may be truncated with isPrintFullString = false ---');
+    Dev.log('');
+
+    // Reset to default
+
+    // Additional example: Different log level with long text
+    Dev.log('--- Multiple Long Strings Demo ---');
+    const longErrorDescription =
+        'Critical Error Analysis: A comprehensive investigation into the recent application crash reveals multiple contributing factors that need immediate attention. The stack trace indicates a NullPointerException occurred in the UserAuthenticationService class at line 347, where the authenticate() method attempted to access a property of a user object that was unexpectedly null. This exception propagated through several layers of the application: first through the AuthenticationController, then to the SecurityMiddleware, and finally surfaced in the main request handler. The root cause analysis suggests that the database connection pool exhausted its available connections during a traffic spike, causing the UserRepository to return null instead of throwing an appropriate exception. Additionally, the error logs reveal that the connection timeout was set too aggressively at 5 seconds, which proved insufficient during peak load periods when the database response time increased to 8-12 seconds. The monitoring dashboard shows that concurrent user sessions peaked at 15,000 simultaneous connections, far exceeding the configured limit of 10,000. Memory profiling data indicates potential memory leaks in the session management module, with heap usage steadily increasing over time without proper garbage collection. Network analysis shows intermittent latency spikes in the load balancer, suggesting possible configuration issues or hardware limitations. Recommended immediate actions include increasing the database connection pool size to 500, adjusting connection timeout to 30 seconds, implementing circuit breaker pattern for external service calls, adding comprehensive null checks with proper error handling, and scheduling urgent performance testing under simulated peak load conditions.';
+
+    Dev.logInfo('Detailed error analysis report (~1900 chars):');
+    Dev.logInfo(longErrorDescription);
+
+    Dev.log('');
+    Dev.log('--- All chunks preserve their respective colors! ---');
+    Dev.log('===================== Long String Demo End =====================');
+    Dev.log('');
 
     /// V 2.2.0 newline replacement for better search visibility
     /// Defaults to true in debug mode (kDebugMode), false in release mode

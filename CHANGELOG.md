@@ -1,8 +1,16 @@
+## [2.5.0] - 15 Jan 2026
+
+**New Features:**
+* Added Dev.isPrintFullString (default: true) – controls the behavior of long-string printing when isMultConsoleLog is enabled.
+  - Automatically splits long strings into 800-char chunks for complete output
+  - Preserves ANSI colors across all chunks
+  - Useful for logging large JSON, API responses, or debug data
+
 ## [2.4.1] - 07 Jan 2026
 
 **Bug Fixes:**
 * Fixed fatal level color rendering to use proper red color (91) instead of incorrect color codes (5/6)
-* Fixed fatal level blinking effect to use correct ANSI escape sequence (`\u001b[5;91m`)
+* Fixed fatal level blinking effect to use correct ANSI escape sequence (`\x1B[5;91m`)
   - Fatal logs now properly display in red with blinking effect when `isMultConsoleLog` is false
   - Ensures consistent visual distinction for critical fatal-level logs across all console outputs
 
